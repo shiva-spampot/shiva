@@ -168,7 +168,7 @@ def insert(spam_id):
             if len(mailFields['attachmentFileMd5']) != 0:                    # If attachment is present - insert into DB
                 i = 0
                 while i < len(mailFields['attachmentFileMd5']):
-                    insert_attachment = "INSERT INTO `attachment`(`date`, `md5`, `attachment_file_name`, `attachment_file_path`, `attachment_file_type`, `spam_id`) VALUES('" + str(mailFields['date']) + "', '" + str(mailFields['attachmentFileMd5'][i]) + "', '" + str(mdb.escape_string(mailFields['attachmentFileName'][i])) + "', '" + str(mdb.escape_string(mailFields['attachmentFilePath'][i])) + "', '" + str(os.path.splitext(mailFields['attachmentFileName'][i])[1]) + "', '" + str(mailFields['s_id']) + "')"
+                    insert_attachment = "INSERT INTO `attachment`(`date`, `md5`, `attachment_file_name`, `attachment_file_path`, `attachment_file_type`, `spam_id`) VALUES('" + str(mailFields['date']) + "', '" + str(mailFields['attachmentFileMd5'][i]) + "', '" + str(mdb.escape_string(mailFields['attachmentFileName'][i].encode('utf-8'))) + "', '" + str(mdb.escape_string(mailFields['attachmentFilePath'][i].encode('utf-8'))) + "', '" + str(os.path.splitext(mdb.escape_string(mailFields['attachmentFileName'][i].encode('utf-8')))[1]) + "', '" + str(mailFields['s_id']) + "')"
                     i = i + 1
                     try:
                         mainDb.execute(insert_attachment)
@@ -179,7 +179,7 @@ def insert(spam_id):
             if len(mailFields['inlineFileMd5']) != 0:                                # If inline file is present - insert into DB
                 i = 0
                 while i < len(mailFields['inlineFileMd5']):
-                    insert_inline = "INSERT INTO `inline`(`date`, `md5`, `inline_file_name`, `inline_file_path`, `spam_id` ) VALUES('" + str(mailFields['date']) + "', '" + str(mailFields['inlineFileMd5'][i]) + "', '" + str(mdb.escape_string(mailFields['inlineFileName'][i])) + "', '" + str(mdb.escape_string(mailFields['inlineFilePath'][i])) + "', '" + str(mailFields['s_id']) + "')"
+                    insert_inline = "INSERT INTO `inline`(`date`, `md5`, `inline_file_name`, `inline_file_path`, `spam_id` ) VALUES('" + str(mailFields['date']) + "', '" + str(mailFields['inlineFileMd5'][i]) + "', '" + str(mdb.escape_string(mailFields['inlineFileName'][i].encode('utf-8'))) + "', '" + str(mdb.escape_string(mailFields['inlineFilePath'][i].encode('utf-8'))) + "', '" + str(mailFields['s_id']) + "')"
                     i = i + 1
                     try:
                         mainDb.execute(insert_inline)
@@ -391,7 +391,7 @@ def update(tempid, mainid):
                 md5Status = 0
                 
             if md5Status == 1:
-                insert_attachment = "INSERT INTO `attachment`(`date`, `md5`, `attachment_file_name`, `attachment_file_path`, `attachment_file_type`, `spam_id`) VALUES('" + str(mailFields['date']) + "', '" + str(mailFields['attachmentFileMd5'][i]) + "', '" + str(mdb.escape_string(mailFields['attachmentFileName'][i])) + "', '" + str(mdb.escape_string(mailFields['attachmentFilePath'][i])) + "', '" + str(os.path.splitext(mailFields['attachmentFileName'][i])[1]) + "', '" + str(mainid) + "')"
+                insert_attachment = "INSERT INTO `attachment`(`date`, `md5`, `attachment_file_name`, `attachment_file_path`, `attachment_file_type`, `spam_id`) VALUES('" + str(mailFields['date']) + "', '" + str(mailFields['attachmentFileMd5'][i]) + "', '" + str(mdb.escape_string(mailFields['attachmentFileName'][i].encode('utf-8'))) + "', '" + str(mdb.escape_string(mailFields['attachmentFilePath'][i].encode('utf-8'))) + "', '" + str(os.path.splitext(mailFields['attachmentFileName'][i])[1].encode('utf-8')) + "', '" + str(mainid) + "')"
                 
                 try:
                     print insert_attachment

@@ -12,7 +12,7 @@ SET time_zone = "+00:00";
 
 -- Creating database and using it
 
-CREATE DATABASE `Shiva`;
+CREATE DATABASE `Shiva` COLLATE=utf8mb4_unicode_ci;
 USE `Shiva`;
 
 --
@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS `attachment` (
   KEY `spam_id` (`spam_id`),
   KEY `md5` (`md5`),
   KEY `attachment_file_name` (`attachment_file_name`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB DEFAULT COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS `inline` (
   KEY `spam_id` (`spam_id`),
   KEY `md5` (`md5`),
   KEY `inline_file_name` (`inline_file_name`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB DEFAULT COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -203,16 +203,4 @@ CREATE TABLE IF NOT EXISTS `spam` (
   KEY `headers` (`headers`(767)),
   KEY `textMessage` (`textMessage`(255)),
   KEY `htmlMessage` (`htmlMessage`(255))
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `target_list`
---
-
-CREATE TABLE IF NOT EXISTS `target_list` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `keyword` varchar(100) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=82 ;
+) ENGINE=InnoDB DEFAULT COLLATE=utf8mb4_unicode_ci;

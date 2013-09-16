@@ -12,7 +12,7 @@ SET time_zone = "+00:00";
 
 -- Creating database and using it
 
-CREATE DATABASE `Temp`;
+CREATE DATABASE `Temp` COLLATE=utf8mb4_unicode_ci;
 USE `Temp`;
 
 --
@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS `attachments` (
   `attachmentFileMd5` varchar(32) DEFAULT NULL COMMENT 'MD5 of the attachment',
   `date` date NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB DEFAULT COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -81,4 +81,4 @@ CREATE TABLE IF NOT EXISTS `spam` (
   `totalCounter` int(11) NOT NULL COMMENT 'total count of spam till date',
   `length` int(11) NOT NULL COMMENT 'Length of the spam',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT COLLATE=utf8mb4_unicode_ci;

@@ -32,7 +32,7 @@ def dbconnect():
                             user = USER,
                             passwd = PASS,
                             db = "Temp",
-                            charset='utf8',
+                            charset='utf8mb4',
                             use_unicode = True)
         conn.autocommit(True)
         cursor = conn.cursor()
@@ -52,7 +52,7 @@ def dbconnectmain():
                             user = USER,
                             passwd = PASS,
                             db = "Shiva",
-                            charset='utf8',
+                            charset='utf8mb4',
                             use_unicode = True)
         conn1.autocommit(True)
         cursor = conn1.cursor()
