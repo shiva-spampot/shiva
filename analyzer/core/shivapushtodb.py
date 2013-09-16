@@ -23,7 +23,7 @@ def push():
         try:
             exeSql.execute(query)
         except Exception, e:
-            logging.info("[+]shivapushtodb.py error %s" % str(e))
+            logging.critical("[+]shivapushtodb.py error %s" % str(e))
             
     
     for record in server.QueueReceiver.records:
