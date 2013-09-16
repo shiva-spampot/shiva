@@ -16,7 +16,7 @@ def push():
     exeSql = shivadbconfig.dbconnect()
     
     attachpath = server.shivaconf.get('analyzer', 'attachpath')
-    inlinepath = server.shivaconf.get('global', 'inlinepath')    
+    inlinepath = server.shivaconf.get('analyzer', 'inlinepath')    
     
     truncate = ['truncate attachments','truncate links', 'truncate sensors', 'truncate spam']
     for query in truncate:
