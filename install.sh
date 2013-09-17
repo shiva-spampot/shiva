@@ -58,7 +58,7 @@ function dbcreate() {
                printf "\n\t[+] Install MySQL-python package by \"sudo pip install MySQL-python\""
                printf "\n\t[+] Edit the shiva/shiva.conf file and"
                printf "\n\t    provide neccesary connection parameters in 'database' section."
-               printf "\n\t[+] Execute dbcreate.py as \"python shiva/dbcreate.py\"\n"
+               printf "\n\t[+] Execute dbcreate.py in shiva folder as \"python dbcreate.py\"\n"
                read -p "Press enter to continue installation...";;
                
         [Nn]*) printf "\n[*]Set \"localdb : False\" in shiva.conf.\n";
