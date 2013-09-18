@@ -158,12 +158,15 @@ def insert(spam_id):
                         print e
                         return None
             
-            insert_relay = "INSERT INTO `relay`(`date`, `firstRelayed`, `lastRelayed`, `totalRelayed`, `spam_id`, `sensorID`) VALUES ('" + str(mailFields['date']) +"', '" + str(mailFields['relayTime']) + "', '" + str(mailFields['relayTime']) + "', '" + str(mailFields['relayCounter']) + "', '" + str(mailFields['s_id']) + "', '" + str(mailFields['sensorID']) +"' )"
-            try:
-                mainDb.execute(insert_relay)
-            except mdb.Error, e:
-                print e
-                return None
+            if int(mailFields['relayCounter']) > 0:
+                insert_relay = "INSERT INTO `relay`(`date`, `firstRelayed`, `lastRelayed`, `totalRelayed`, `spam_id`, `sensorID`) VALUES ('" + str(mailFields['date']) +"', '" + str(mailFields['relayTime']) + "', '" + str(mailFields['relayTime']) + "', '" + str(mailFields['relayCounter']) + "', '" + str(mailFields['s_id']) + "', '" + str(mailFields['sensorID']) +"' )"
+                
+                
+                try:
+                    mainDb.execute(insert_relay)
+                except mdb.Error, e:
+                    print e
+                    return None
                 
             if len(mailFields['attachmentFileMd5']) != 0:                    # If attachment is present - insert into DB
                 i = 0
@@ -426,29 +429,30 @@ def update(tempid, mainid):
             i = i + 1
             
     # Last but not the least, updating relay table.
-    relayDate = str(mailFields['relayTime']).split(' ')[0]
-    checkRelayDate = "SELECT `id` FROM `relay` WHERE `spam_id` = '" + str(mainid) + "' AND `date` = '" + str(relayDate) + "'"
-    try:
-        mainDb.execute(checkRelayDate)
-    except mdb.Error, e:
-        print e
-        return None
-        
-    if len(mainDb.fetchall()) >= 1:
-        update_relay = "UPDATE `relay` SET `lastRelayed` = '" + str(mailFields['relayTime']) + "', totalRelayed = totalRelayed + '" + str(mailFields['relayCounter']) + "' WHERE `spam_id` = '" + str(mainid) + "'"
+    if int(mailFields['relayCounter']) > 0:
+        relayDate = str(mailFields['relayTime']).split(' ')[0]
+        checkRelayDate = "SELECT `id` FROM `relay` WHERE `spam_id` = '" + str(mainid) + "' AND `date` = '" + str(relayDate) + "'"
         try:
-            mainDb.execute(update_relay)
+            mainDb.execute(checkRelayDate)
         except mdb.Error, e:
             print e
             return None
-        
-    else:
-        insert_relay = "INSERT INTO `relay`(`date`, `firstRelayed`, `lastRelayed`, `totalRelayed`, `spam_id`, `sensorID`) VALUES ('" + str(relayDate) + "', '" + str(mailFields['relayTime']) + "', '" + str(mailFields['relayTime']) + "', '" + str(mailFields['relayCounter']) + "', '" + str(mainid) + "', '" + str(mailFields['sensorID']) + "')"
-        try:
-            mainDb.execute(insert_relay)
-        except mdb.Error, e:
-            print e
-            return None
+            
+        if len(mainDb.fetchall()) >= 1:
+            update_relay = "UPDATE `relay` SET `lastRelayed` = '" + str(mailFields['relayTime']) + "', totalRelayed = totalRelayed + '" + str(mailFields['relayCounter']) + "' WHERE `spam_id` = '" + str(mainid) + "'"
+            try:
+                mainDb.execute(update_relay)
+            except mdb.Error, e:
+                print e
+                return None
+            
+        else:
+            insert_relay = "INSERT INTO `relay`(`date`, `firstRelayed`, `lastRelayed`, `totalRelayed`, `spam_id`, `sensorID`) VALUES ('" + str(relayDate) + "', '" + str(mailFields['relayTime']) + "', '" + str(mailFields['relayTime']) + "', '" + str(mailFields['relayCounter']) + "', '" + str(mainid) + "', '" + str(mailFields['sensorID']) + "')"
+            try:
+                mainDb.execute(insert_relay)
+            except mdb.Error, e:
+                print e
+                return None
              
 
 if __name__ == '__main__':
