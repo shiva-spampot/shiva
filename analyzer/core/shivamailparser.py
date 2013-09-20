@@ -154,9 +154,8 @@ def main(key, msgMailRequest):
 
     try:
         try:
-            logging.critical("msg['to']: %s", msg['to'])
             if msg['to'] != None:
-                mailFields['to'] = msg['to'].replace("'", "")
+                mailFields['to'] = parseaddr(msg['to'].replace("'", ""))[1]
             else:
                 logging.critical("[-] Info shivamailparser.py - To field has value None")
                 mailFields['to'] = "-"
