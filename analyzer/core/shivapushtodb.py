@@ -5,6 +5,9 @@ import logging
 import datetime
 import subprocess
 import os
+import sys
+import json
+import cPickle
 
 import MySQLdb as mdb
 
@@ -12,7 +15,7 @@ import server
 import shivadbconfig
 
 def push():
-    logging.info("[+]Inside shivapushtodb Module")
+	logging.info("[+]Inside shivapushtodb Module")
     exeSql = shivadbconfig.dbconnect()
     
     attachpath = server.shivaconf.get('analyzer', 'attachpath')
@@ -97,15 +100,57 @@ def push():
         except mdb.Error, e:
             logging.critical("[-] Error (shivapushtodb insert_sensor - %d: %s" % (e.args[0], e.args[1]))
             return None
-
-    exeSql.close()
-    del server.QueueReceiver.records[:]
-    server.QueueReceiver.totalRelay = 0
-    logging.info("[+]shivapushtodb Module: List and global list counter resetted.")
           
     subprocess.Popen(['python', os.path.dirname(os.path.realpath(__file__)) + '/shivamaindb.py'])
     logging.info("Shivamaindb called")
   
 def sendfeed():
+    sys.path.append("hpfeeds/")
+    import hpfeeds    
+    
+    host = server.shivaconf.get('hpfeeds', 'host')
+    port = server.shivaconf.getint('hpfeeds', 'port')
+    ident = server.shivaconf.get('hpfeeds', 'ident')
+    secret = server.shivaconf.get('hpfeeds', 'secret')
+    channel = {"parsed": "shiva.parsed", "ip_url": "shiva.ip_and_url"}
+    
+    try:
+        hpc = hpfeeds.new(host, port, ident, secret)
+    except Exception, e:
+        logging.critical("Cannot connect. %s" % e)
+        
+    for record in server.QueueReceiver.records:
+        try:
+            data = cPickle.dumps(record)
+            hpc.publish(channel["parsed"], data)
+            logging.info("Record sent.")
+        except Exception, e:
+            logging.critical("[-]Error in publishing to hpfeeds. %s" % e)   
+    
+        if len(record['links']) > 0:
+            i = 0
+            for link in record['links']:
+                try:
+                    record = {"id": record['s_id'], "url": link}
+                    data = json.dumps(record)
+                    hpc.publish(channel["ip_url"], data)
+                except Exception, e:
+                    logging.critical("[-]Error in publishing to hpfeeds. %s" % e)
+                
+        ip_list = record['sourceIP'].split(',')            
+        for ip in ip_list:
+            try:
+                record = {"id": record['s_id'], "source_ip": ip}
+                data = json.dumps(record)
+                hpc.publish(channel["ip_url"], data)
+            except Exception, e:
+                logging.critical("[-]Error in publishing to hpfeeds. %s" % e)
+                
     logging.info("[+]shivapushtodb Module: Calling sendfeeds module.")
-    subprocess.Popen(['python', os.path.dirname(os.path.realpath(__file__)) + '/hpfeeds/sendfeeds.py'])
+    subprocess.Popen(['python', os.path.dirname(os.path.realpath(__file__)) + '/hpfeeds/sendfiles.py'])
+        
+def cleanup():
+    exeSql.close()
+    del server.QueueReceiver.records[:]
+    server.QueueReceiver.totalRelay = 0
+    logging.info("[+]shivapushtodb Module: List and global list counter resetted.")

@@ -1,6 +1,7 @@
 #! /usr/bin/python
 """
-Schedules a job to reset individual counters of relayed mails to 0. This would make sure each spammer finds spamPot relaying everyday
+Schedules a job to reset individual counters of relayed mails to 0. 
+This would make sure each spammer finds spamPot relaying everyday.
 """
 import datetime
 import logging
@@ -20,7 +21,9 @@ def resetcounter():
             shivapushtodb.sendfeed()
     else:
         if hpfeeds is True:
-            logging.info("[+]shivascheduler.py: This code is yet to be written.")
+            logging.info("[+]shivascheduler.py: Local db is disabled. Sending data to hpfeeds.")
+            shivapushtodb.sendfeed()
+    shivapushtodb.cleanup()
 
 def schedule():
     sched = Scheduler()
