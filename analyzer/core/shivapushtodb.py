@@ -15,7 +15,7 @@ import server
 import shivadbconfig
 
 def push():
-	logging.info("[+]Inside shivapushtodb Module")
+    logging.info("[+]Inside shivapushtodb Module")
     exeSql = shivadbconfig.dbconnect()
     
     attachpath = server.shivaconf.get('analyzer', 'attachpath')
