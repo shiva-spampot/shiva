@@ -12,10 +12,7 @@ import cPickle
  
 import hpfeeds
 
-import shivadbconfig
-
 WORKERS = 2
-exeSql = shivadbconfig.dbconnect()
 queue = Queue.Queue(0)
 
 #Hpfeeds stuff
