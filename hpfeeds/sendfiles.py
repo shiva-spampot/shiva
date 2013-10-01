@@ -12,10 +12,10 @@ confpath = os.path.dirname(os.path.realpath(__file__)) + "/../../../../../../shi
 shivaconf = ConfigParser.ConfigParser()
 shivaconf.read(confpath)
 
-host = dbconfig.shivaconf.get('hpfeeds', 'host')
-port = dbconfig.shivaconf.getint('hpfeeds', 'port')
-ident = dbconfig.shivaconf.get('hpfeeds', 'ident')
-secret = dbconfig.shivaconf.get('hpfeeds', 'secret')
+host = shivaconf.get('hpfeeds', 'host')
+port = shivaconf.getint('hpfeeds', 'port')
+ident = shivaconf.get('hpfeeds', 'ident')
+secret = shivaconf.get('hpfeeds', 'secret')
 
 path = {'raw_spam' : shivaconf.get('analyzer', 'rawspampath'), 
         'attach' : shivaconf.get('analyzer', 'attachpath')}

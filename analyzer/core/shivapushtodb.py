@@ -105,7 +105,7 @@ def push():
     logging.info("Shivamaindb called")
   
 def sendfeed():
-    sys.path.append("hpfeeds/")
+	sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/hpfeeds/")
     import hpfeeds    
     
     host = server.shivaconf.get('hpfeeds', 'host')
