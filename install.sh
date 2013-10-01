@@ -136,7 +136,8 @@ function analyzer() {
     cp -v $WORK_PATH/analyzer/core/shiva*.py $INSTALL_PATH/ShivaAnalyzer/lib/python2.7/site-packages/lamson/
     
     mkdir -p $INSTALL_PATH/ShivaAnalyzer/lib/python2.7/site-packages/lamson/hpfeeds/
-    cp -v $WORK_PATH/hpfeeds/* $INSTALL_PATH/ShivaAnalyzer/lib/python2.7/site-packages/lamson/hpfeeds/
+    cp -rv $WORK_PATH/hpfeeds/sendfiles.py $INSTALL_PATH/ShivaAnalyzer/lib/python2.7/site-packages/lamson/hpfeeds/
+    cp -rv $WORK_PATH/hpfeeds/hpfeeds.py $INSTALL_PATH/ShivaAnalyzer/lib/python2.7/site-packages/lamson/hpfeeds/
     
     cp -v $WORK_PATH/analyzer/config/boot.py $INSTALL_PATH/ShivaAnalyzer/Analyzer/config/
     cp -v $WORK_PATH/analyzer/config/settings.py $INSTALL_PATH/ShivaAnalyzer/Analyzer/config/
