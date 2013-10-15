@@ -69,7 +69,7 @@ def fix_padding_for_attachments(payload):
     payload = payload.rstrip()
     missing_padding = (4 - len(payload) % 4) % 4
     payload += '=' * missing_padding
-    return payload
+    return base64.b64decode(payload)
 
 def writepartsrecurse(msg):
     """This module recursively parses all fields of multipart spam mail
