@@ -39,12 +39,12 @@ INSTALL_PATH=$WORK_PATH/shiva
 
 prerequisites () {
     printf "\n\n[*] Checking for the prerequisites in system.\n"
-    pkgs=("python" "exim4-daemon-light" "g++" "python-virtualenv" "python-dev" "libmysqlclient-dev")
+    pkgs=("python" "g++" "python-dev" "python-virtualenv" "exim4-daemon-light" "libmysqlclient-dev")
     
     missing_counter=0
     for needed_pkg in "${pkgs[@]}"
     do
-        if ! dpkg-query -W $needed_pkg > /dev/null 2>&1; then
+        if ! dpkg -s $needed_pkg > /dev/null 2>&1; then
 	  printf "\t[-] Missing package: %s\n" "$needed_pkg"
 	  missing_counter=$[$missing_counter + 1]	  
 	else
@@ -74,10 +74,10 @@ dbcreate () {
         [Yy]*) sed -i 's/localdb : False/localdb : True/g' $INSTALL_PATH/shiva.conf
                printf "\n[*] Steps to setup local databases."
                printf "\n\t[+] Make sure you've 'mysql-client' and 'mysql-server' installed."
-               printf "\n\t[+] Install MySQL-python package by \"sudo pip install MySQL-python\""
                printf "\n\t[+] Edit the shiva/shiva.conf file and"
                printf "\n\t    provide neccesary connection parameters in 'database' section."
                printf "\n\t[+] Execute dbcreate.py in shiva folder as \"python dbcreate.py\"\n"
+               printf "\n\t[+] Refer to User Manual for detailed instructions\n"
                read -p "Press enter to continue installation...";;
                
         [Nn]*) printf "\n[*] Setting \"localdb : False\" in shiva.conf.\n";;
@@ -96,7 +96,7 @@ receiver () {
     cd shivaReceiver
     source bin/activate
     
-    printf "\n[*] Installing Lamson and creating project: \n"
+    printf "\n[*] Installing Lamson (receiver) and creating project: \n"
     easy_install -U distribute
     pip install lamson
     lamson gen -project receiver
@@ -130,7 +130,7 @@ analyzer () {
     cd shivaAnalyzer
     source bin/activate
     
-    printf "\n[*] Installing Lamson and creating project:\n"
+    printf "\n[*] Installing Lamson (analyzer) and creating project:\n"
     pip install lamson
     lamson gen -project analyzer
     
@@ -159,7 +159,7 @@ analyzer () {
 }
 
 create_dirs () {
-    printf "\n\n[*] Creating necessary folders and updating configuration files!\n"
+    printf "\n[*] Creating necessary folders and updating configuration files.....\n"
 
     mkdir $INSTALL_PATH/queue 
     mkdir $INSTALL_PATH/queue/new
@@ -178,7 +178,7 @@ create_dirs () {
     sed -i "s/rawspampath : somepath/rawspampath : $ESCAPED_PATH\/rawspams\//g" $INSTALL_PATH/shiva.conf
     sed -i "s/attachpath : somepath/attachpath : $ESCAPED_PATH\/attachments\//g" $INSTALL_PATH/shiva.conf
     sed -i "s/inlinepath : somepath/inlinepath : $ESCAPED_PATH\/attachments\/inlines\//g" $INSTALL_PATH/shiva.conf
-    printf "\n[+] All done. Refer to User Manual to further customize shiva.conf configuration file\n"
+    printf "\n[+] All done - phew!!!. Refer to User Manual to further customize exim MTA, shiva.conf configuration file and starting honeyp0t\n\n"
 
 }
 
