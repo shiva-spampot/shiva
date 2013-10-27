@@ -17,8 +17,13 @@ from email.utils import parseaddr
 import ssdeep
 
 import shivaconclude
-import shivadbconfig
+import shivanotifyerrors
 import server
+
+queuepath = server.shivaconf.get('global', 'queuepath')
+undeliverable_path = server.shivaconf.get('global', 'undeliverable_path')
+notify = server.shivaconf.getboolean('notification', 'enabled')
+
 
 # Global dictionary to store parsed fields of spam
 mailFields = {'headers':'', 'to':'', 'from':'', 'subject':'', 'date':'', 'firstSeen':'', 'lastSeen':'', 'firstRelayed':'', 'lastRelayed':'', 'sourceIP':'', 'sensorID':'', 'text':'', 'html':'', 'inlineFileName':[], 'inlineFile':[], 'inlineFileMd5':[], 'attachmentFileName':[], 'attachmentFile':[], 'attachmentFileMd5':[], 'links':[], 'ssdeep':'', 's_id':'', 'len':''}
@@ -71,6 +76,18 @@ def fix_padding_for_attachments(payload):
     payload += '=' * missing_padding
     return base64.b64decode(payload)
 
+
+def movebadsample(key, msg):
+    """Copies the troublesome spam to different folder and removes it from 
+    queue.
+    """
+    logging.critical("\n**** [-] Error!!! ****")
+    logging.critical("Copying spam file to distortedSamples directory before \
+      moving it out of queue")
+    shutil.copyfile(queuePath + key, undeliverable_path + key)
+    if notify is True:
+	shivanotifyerrors.notifydeveloper(msg)
+    
 def writepartsrecurse(msg):
     """This module recursively parses all fields of multipart spam mail
     and stores them in the dictionary.
@@ -126,6 +143,7 @@ def writepartsrecurse(msg):
 
     return None
 
+    
 def main(key, msgMailRequest):
     """This function gets called from server.py module
     """
@@ -162,7 +180,7 @@ def main(key, msgMailRequest):
 
         except Exception, e:
             logging.critical("[-] Error (Module shivamailparser.py) - some issue in parsing 'to' field %s" % key)
-            shivadbconfig.errorhandling(key, msgMailRequest, "[-] Error (Module shivamailparser.py) - some issue in parsing 'to' field %s %s \n" % (key, e))
+            movebadsample(key, "[-] Error (Module shivamailparser.py) - some issue in parsing 'to' field %s %s \n" % (key, e))
             return None
 
         try:
@@ -176,7 +194,7 @@ def main(key, msgMailRequest):
 
         except Exception, e:
             logging.critical("[-] Error (Module shivamailparser.py) - some issue in parsing 'from' field %s -- %s" % (key, e.args))
-            shivadbconfig.errorhandling(key, msgMailRequest, "[-] Error (Module shivamailparser.py) - some issue in parsing 'from' field %s %s \n" % (key, e))
+            movebadsample(key, "[-] Error (Module shivamailparser.py) - some issue in parsing 'from' field %s %s \n" % (key, e))
             return None
 
         try:
@@ -198,7 +216,7 @@ def main(key, msgMailRequest):
 
         except Exception, e:
             logging.critical("[-] Error (Module shivamailparser.py) - some issue in parsing 'subject' field %s" % key)
-            shivadbconfig.errorhandling(key, msgMailRequest, "[-] Error (Module shivamailparser.py) - some issue in parsing 'subject' field %s %s \n" % (key, e))
+            movebadsample(key, "[-] Error (Module shivamailparser.py) - some issue in parsing 'subject' field %s %s \n" % (key, e))
             return None
 
         try:
@@ -207,7 +225,7 @@ def main(key, msgMailRequest):
 
         except Exception, e:
             logging.critical("[-] Error (Module shivamailparser.py) - some issue in parsing 'sourceIP and sensorID' field %s" % key)
-            shivadbconfig.errorhandling(key, msgMailRequest, "[-] Error (Module shivamailparser.py) - some issue in parsing 'sourceIP and sensorID' fields %s %s \n" % (key, e))
+            movebadsample(key, "[-] Error (Module shivamailparser.py) - some issue in parsing 'sourceIP and sensorID' fields %s %s \n" % (key, e))
             return None
 
         try:
@@ -215,7 +233,7 @@ def main(key, msgMailRequest):
 
         except Exception, e:
             logging.critical("[-] Error (Module shivamailparser.py) - some issue in writePartsRecurse function %s -- %s" % (key, e.args))
-            shivadbconfig.errorhandling(key, msgMailRequest, "[-] Error (Module shivamailparser.py) - some issue in writePartsRecurse function %s %s \n" % (key, e))
+            movebadsample(key, "[-] Error (Module shivamailparser.py) - some issue in writePartsRecurse function %s %s \n" % (key, e))
             return None
 
         try:
@@ -227,7 +245,7 @@ def main(key, msgMailRequest):
 
         except Exception, e:
             logging.critical("[-] Error (Module shivamailparser.py) - some issue in 'text' and 'html' field %s" % key)
-            shivadbconfig.errorhandling(key, msgMailRequest, "[-] Error (Module shivamailparser.py) - some issue in 'text' and 'html' field %s %s \n" % (key, e))
+            movebadsample(key, "[-] Error (Module shivamailparser.py) - some issue in 'text' and 'html' field %s %s \n" % (key, e))
             return None
 
         # parse different parts of spam (text, html, inline) and hunt for URLs
@@ -237,7 +255,7 @@ def main(key, msgMailRequest):
 
         except Exception, e:
             logging.critical("[-] Error (Module shivamailparser.py) - some issue in parsing 'links' field %s" % key)
-            shivadbconfig.errorhandling(key, msgMailRequest, "[-] Error (Module shivamailparser.py) - some issue in parsing 'links' field %s %s \n" % (key, e))
+            movebadsample(key, "[-] Error (Module shivamailparser.py) - some issue in parsing 'links' field %s %s \n" % (key, e))
             return None
 
         # Timestamping when spam is parsed by our code; not the original time stamping
@@ -262,7 +280,7 @@ def main(key, msgMailRequest):
 
     except Exception, e:
         logging.critical("[-] Error (Module shivamailparser.py) - some issue in parsing file %s %s" % (key, e))
-        shivadbconfig.errorhandling(key, msgMailRequest, "[-] Error (Module shivamailparser.py) - some issue in parsing file %s %s \n" % (key, e))
+        movebadsample(key, "[-] Error (Module shivamailparser.py) - some issue in parsing file %s %s \n" % (key, e))
         return None
 
     shivaconclude.main(mailFields, key, msgMailRequest)
