@@ -53,9 +53,9 @@ def main(mailFields, matchedHash, key, msgMailRequest):
                     logging.info("[+]shivaprocessold Module: Relay counter has not reached limit yet. Shall relay this.")
                     
                     # Following 3 lines does the relaying
-		     queuePath = server.shivaconf.get('global', 'queuepath')
-		     processMessage = server.QueueReceiver(queuePath)
-		     processMessage.process_message(msgMailRequest)
+                    queuePath = server.shivaconf.get('global', 'queuepath')
+                    processMessage = server.QueueReceiver(queuePath)
+                    processMessage.process_message(msgMailRequest)
                     
                     record['relayed'] += 1
                     server.QueueReceiver.totalRelay += 1

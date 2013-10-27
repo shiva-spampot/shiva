@@ -20,9 +20,13 @@ import shivaconclude
 import shivanotifyerrors
 import server
 
-queuepath = server.shivaconf.get('global', 'queuepath')
-undeliverable_path = server.shivaconf.get('global', 'undeliverable_path')
-notify = server.shivaconf.getboolean('notification', 'enabled')
+confpath = os.path.dirname(os.path.realpath(__file__)) + "/../../../../../shiva.conf"
+shivaconf = ConfigParser.ConfigParser()
+shivaconf.read(confpath)
+
+queuepath = shivaconf.get('global', 'queuepath')
+undeliverable_path = shivaconf.get('analyzer', 'undeliverable_path')
+notify = shivaconf.getboolean('notification', 'enabled')
 
 
 # Global dictionary to store parsed fields of spam

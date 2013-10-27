@@ -10,11 +10,14 @@ import smtplib
 import ConfigParser
 import server
 
+confpath = os.path.dirname(os.path.realpath(__file__)) + "/../../../../../shiva.conf"
+shivaconf = ConfigParser.ConfigParser()
+shivaconf.read(confpath)
 
-
-recipient = server.shivaconf.get('notification', 'recipient')
-smtphost = server.shivaconf.get('analyzer', 'relayhost')
-smtpport = server.shivaconf.get('analyzer', 'relayport')
+senderid = shivaconf.get('notification', 'sender')
+recipient = shivaconf.get('notification', 'recipient')
+smtphost = shivaconf.get('analyzer', 'relayhost')
+smtpport = shivaconf.get('analyzer', 'relayport')
 
 
 
