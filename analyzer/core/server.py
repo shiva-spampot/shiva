@@ -6,7 +6,7 @@ SHIVA - QueueReceiver module has been amended to
 * Read to configuration file
 * Start the scheduler
 * Initializing the relay counter and spam list
-* And, making call to our customised module shivatacklequeue.
+* And, making call to our customised module shivamailparser
 """
 
 import smtplib
@@ -26,7 +26,7 @@ import os
 from lamson.bounce import PRIMARY_STATUS_CODES, SECONDARY_STATUS_CODES, COMBINED_STATUS_CODES
 
 import shivascheduler
-import shivatacklequeue
+import shivamailparser
 
 confpath = os.path.dirname(os.path.realpath(__file__)) + "/../../../../../shiva.conf"
 shivaconf = ConfigParser.ConfigParser()
@@ -258,11 +258,11 @@ class QueueReceiver(object):
                     logging.debug("Pulled message with key: %r off", key)
                     
                     # Shiva - Interupting normal flow execution of QueueReceiver here and calling our
-                    # customized module ShivaTackleQueue to deal with mails retrieved from the queue.
+                    # customized module shivamailparser to deal with mails retrieved from the queue.
                     # Send "key", which is actually the name of spam file in queue, 
                     # msg", is actually complete mail body, is in MailRequest format
 	
-                    shivatacklequeue.tacklequeue(key, msg)	
+                    shivamailparser.main(key, msg)
                                         
                     # Irrespective of mail relayed or not, it has to be cleared from queue. 
                     # Hence, whether process_message executes or not,

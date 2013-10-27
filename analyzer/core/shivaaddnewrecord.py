@@ -9,7 +9,7 @@ import server
 import shutil
 import datetime
 
-import shivatacklequeue
+import server
 
 def main(mailFields, key, msgMailRequest):
     """Main function. 
@@ -59,7 +59,12 @@ def main(mailFields, key, msgMailRequest):
 
         if int(server.QueueReceiver.totalRelay) < relaycounter:
             logging.info("[+]shivaaddnewrecord Module: Relay counter has not reached limit yet. Shall relay this.")
-            shivatacklequeue.process_message(msgMailRequest)
+            
+	    # Following 3 lines does the relaying
+	    queuePath = server.shivaconf.get('global', 'queuepath')
+	    processMessage = server.QueueReceiver(queuePath)
+	    processMessage.process_message(msgMailRequest)
+
             newRecord['relayed'] += 1
             server.QueueReceiver.totalRelay += 1
         else:

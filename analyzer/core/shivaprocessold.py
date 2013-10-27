@@ -2,7 +2,6 @@ import logging
 import datetime
 
 import server
-import shivatacklequeue
 
 def main(mailFields, matchedHash, key, msgMailRequest):
     logging.info("[+]Inside shivaprocessold Module.")
@@ -52,7 +51,12 @@ def main(mailFields, matchedHash, key, msgMailRequest):
                 individualcounter = server.shivaconf.getint('analyzer', 'individualcounter')
                 if int(server.QueueReceiver.totalRelay) < relaycounter and int(record['relayed']) < individualcounter:
                     logging.info("[+]shivaprocessold Module: Relay counter has not reached limit yet. Shall relay this.")
-                    shivatacklequeue.process_message(msgMailRequest)
+                    
+                    # Following 3 lines does the relaying
+		     queuePath = server.shivaconf.get('global', 'queuepath')
+		     processMessage = server.QueueReceiver(queuePath)
+		     processMessage.process_message(msgMailRequest)
+                    
                     record['relayed'] += 1
                     server.QueueReceiver.totalRelay += 1
                 else:
