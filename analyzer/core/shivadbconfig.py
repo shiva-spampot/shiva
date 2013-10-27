@@ -12,7 +12,6 @@ import smtplib
 import ConfigParser
 
 import MySQLdb as mdb
-import shivanotifyerrors
 
 confpath = os.path.dirname(os.path.realpath(__file__)) + "/../../../../../shiva.conf"
 shivaconf = ConfigParser.ConfigParser()
