@@ -119,6 +119,8 @@ receiver () {
     cp -v $WORK_PATH/receiver/handlers/spampot.py $INSTALL_PATH/shivaReceiver/receiver/app/handlers/
     
     cp -v $WORK_PATH/helpers/clearlogs.sh $INSTALL_PATH/shivaReceiver/receiver/logs/
+    cp -v $WORK_PATH/helpers/restart_receiver.sh $INSTALL_PATH/shivaReceiver/receiver/
+
     
     printf "[+] Setting up Shiva Receiver done!\n"
     deactivate
