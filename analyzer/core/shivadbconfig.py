@@ -12,6 +12,7 @@ import smtplib
 import ConfigParser
 
 import MySQLdb as mdb
+import shivanotifyerrors
 
 confpath = os.path.dirname(os.path.realpath(__file__)) + "/../../../../../shiva.conf"
 shivaconf = ConfigParser.ConfigParser()
@@ -20,6 +21,7 @@ shivaconf.read(confpath)
 HOST = shivaconf.get('database', 'host')
 USER = shivaconf.get('database', 'user')
 PASS = shivaconf.get('database', 'password')
+
 
 def dbconnect():
     """ Returns MySQL cursor.
@@ -39,7 +41,7 @@ def dbconnect():
         return cursor
 
     except mdb.Error, e:
-        logging.critical("[-] Error (shivaconfig.py) - %d: %s" % (e.args[0], e.args[1]))
+        logging.critical("[-] Error (shivadbconfig.py) - %d: %s" % (e.args[0], e.args[1]))
         
 def dbconnectmain():
     """Returns MySQL cursor.
@@ -59,13 +61,4 @@ def dbconnectmain():
         return cursor
 
     except mdb.Error, e:
-        logging.critical("[-] Error (shivaconfig.py) - %d: %s" % (e.args[0], e.args[1]))
-
-def errorhandling(key, msgMailRequest, msg):
-    """Copies the troublesome spam to different folder and removes it from 
-    queue.
-    """
-    logging.critical("\n**** [-] Error!!! ****")
-    logging.critical("Copying spam file to distortedSamples directory before \
-      moving it out of queue")
-    shutil.copyfile(queuePath + key, devilPath + key)
+        logging.critical("[-] Error (shivadbconfig.py) - %d: %s" % (e.args[0], e.args[1]))
