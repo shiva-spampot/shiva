@@ -97,9 +97,12 @@ receiver () {
     source bin/activate
     
     printf "\n[*] Installing Lamson (receiver) and creating project: \n"
-    easy_install -U distribute
     pip install lamson
     lamson gen -project receiver
+    
+    printf "\n[*] Installing required python modules:\n"
+    easy_install -U distribute
+    pip install apscheduler
     
     printf "\n[*] Copying neccesary files: \n"
     cp -v $WORK_PATH/receiver/core/encoding.py $INSTALL_PATH/shivaReceiver/lib/python2.7/site-packages/lamson/
