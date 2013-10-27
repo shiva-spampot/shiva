@@ -127,7 +127,7 @@ def writepartsrecurse(msg):
     return None
 
 def main(key, msgMailRequest):
-    """This function gets called from queueFilter.filter()
+    """This function gets called from server.py module
     """
     logging.critical("inside mailparser module")
     global mailFields

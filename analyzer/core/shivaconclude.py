@@ -1,5 +1,5 @@
 """This module decides that whether a spam is new or old. It checks this by 
-comparing the old spam against the records, we already have in our temporary
+comparing the spam against the records which are already there in temporary
 list. It first compares Md5 checksum, if not found, it compares against the
 SSDEEP hash. If spam is new, it passes it to shivaaddnewrecord module,
 for further processing. If it's an old spam, it passes it to shivaprocessold
