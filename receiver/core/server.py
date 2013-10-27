@@ -15,6 +15,9 @@ from lamson import queue, mail, routing
 import time
 import traceback
 from lamson.bounce import PRIMARY_STATUS_CODES, SECONDARY_STATUS_CODES, COMBINED_STATUS_CODES
+import subprocess
+
+from apscheduler.scheduler import Scheduler
 
 def undeliverable_message(raw_message, failure_type):
     """
@@ -183,6 +186,13 @@ class SMTPReceiver(smtpd.SMTPServer):
                                   )
         #SMTPServer.__init__(self, (self.host, self.port), None)
         
+        #-----------------------
+        sched = Scheduler()
+        logging.info("Scheduling Job.")
+        sched.add_interval_job(restart, minutes=30)
+        sched.start()
+        #-----------------------
+        
     def start(self):
         """
         Kicks everything into gear and starts listening on the port.  This
@@ -253,7 +263,7 @@ class QueueReceiver(object):
 
         while True:
             keys = inq.keys()
-
+ 
             for key in keys:
                 msg = inq.get(key)
 
@@ -291,7 +301,12 @@ class QueueReceiver(object):
                               "%r, From: %r, to To %r." % (Peer, From, To))
             undeliverable_message(msg.original, "Router failed to catch exception.")
 
-
+def restart():
+    logging.info("Stopping receiver!")
+    try:
+        subprocess.Popen(["bash", "restart_receiver.sh"])
+    except Exception, e:
+        logging.error(e)
 
 
 
