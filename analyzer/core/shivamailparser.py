@@ -8,10 +8,12 @@ from email.header import decode_header
 import email.Message
 import email.Parser
 import logging
+import os
 import re
 import datetime
 import hashlib
 import base64
+import ConfigParser
 from email.utils import parseaddr
 
 import ssdeep

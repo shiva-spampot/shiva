@@ -6,6 +6,7 @@
   
 '''
 import shutil
+import os
 import smtplib
 import ConfigParser
 import server
