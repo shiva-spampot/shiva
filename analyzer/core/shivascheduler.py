@@ -30,4 +30,4 @@ def schedule():
     duration = server.shivaconf.getint('analyzer', 'schedulertime')
     sched.add_interval_job(resetcounter, minutes=duration)
     sched.start()
-    logging.info("Shiva scheduler started at %s. (%d minutes interval). " % (datetime.datetime.now(), duration))
+    logging.info("Shiva scheduler, which dumps data into maindb, resets global counter and sends data on hpfeeds, started at %s and would execute every %d minutes " % (datetime.datetime.now(), duration))
