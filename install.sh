@@ -68,7 +68,11 @@ helpers () {
 }
 
 dbcreate () {
-    printf "\nDo you wish to setup local databases for storing spam? "
+    printf "\nDo you wish to store analyzed data in database?" 
+    printf "Instead, you can have following setups:"
+    printf "\n\t[+] Store data in local/remote database, or"
+    printf "\n\t[+] Do not store but push all data to hpfeeds, or"
+    printf "\n\t[+] Store data in local/remote database and push data to hpfeeds as well\n\n"
     read -p "[Y]es/[N]o... " choice
     case $choice in
         [Yy]*) sed -i 's/localdb : False/localdb : True/g' $INSTALL_PATH/shiva.conf
@@ -78,6 +82,7 @@ dbcreate () {
                printf "\n\t    provide neccesary connection parameters in 'database' section."
                printf "\n\t[+] Execute dbcreate.py in shiva folder as \"python dbcreate.py\"\n"
                printf "\n\t[+] Refer to User Manual for detailed instructions\n"
+               printf "\n\t[+] For remote database; provide necessary connection parameters in 'database' section."
                read -p "Press enter to continue installation...";;
                
         [Nn]*) printf "\n[*] Setting \"localdb : False\" in shiva.conf.\n";;
@@ -100,7 +105,7 @@ receiver () {
     pip install lamson
     lamson gen -project receiver
     
-    printf "\n[*] Installing required python modules:\n"
+    printf "\n[*] Installing required python modules for receiver:\n"
     easy_install -U distribute
     pip install apscheduler
     
@@ -139,7 +144,7 @@ analyzer () {
     pip install lamson
     lamson gen -project analyzer
     
-    printf "\n[*] Installing required python modules:\n"
+    printf "\n[*] Installing required python modules for analyzer:\n"
     easy_install -U distribute
     pip install cython
     pip install apscheduler
