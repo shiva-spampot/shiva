@@ -112,7 +112,7 @@ def sendfeed():
     port = server.shivaconf.getint('hpfeeds', 'port')
     ident = server.shivaconf.get('hpfeeds', 'ident')
     secret = server.shivaconf.get('hpfeeds', 'secret')
-    channel = {"parsed": "shiva.parsed", "ip_url": "shiva.ip_and_url"}
+    channel = {"parsed": "shiva.parsed", "ip_url": "shiva.ip.url"}
     
     try:
         hpc = hpfeeds.new(host, port, ident, secret)
@@ -125,28 +125,27 @@ def sendfeed():
             hpc.publish(channel["parsed"], data)
             logging.info("Record sent.")
         except Exception, e:
-            logging.critical("[-]Error in publishing to hpfeeds. %s" % e)   
+            logging.critical("[-] Error (shivapushtodb parsed) in publishing to hpfeeds. %s" % e)   
     
         if len(record['links']) > 0:
-            i = 0
             for link in record['links']:
                 try:
-                    record = {"id": record['s_id'], "url": link}
-                    data = json.dumps(record)
+                    data = {"id": record['s_id'], "url": link}
+                    data = json.dumps(data)
                     hpc.publish(channel["ip_url"], data)
                 except Exception, e:
-                    logging.critical("[-]Error in publishing to hpfeeds. %s" % e)
+                    logging.critical("[-] Error (shivapushtodb link) in publishing to hpfeeds. %s" % e)
                 
         ip_list = record['sourceIP'].split(',')            
         for ip in ip_list:
             try:
-                record = {"id": record['s_id'], "source_ip": ip}
-                data = json.dumps(record)
+                data = {"id": record['s_id'], "source_ip": ip}
+                data = json.dumps(data)
                 hpc.publish(channel["ip_url"], data)
             except Exception, e:
-                logging.critical("[-]Error in publishing to hpfeeds. %s" % e)
+                logging.critical("[-] Error (shivapushtodb ip) in publishing to hpfeeds. %s" % e)
                 
-    logging.info("[+]shivapushtodb Module: Calling sendfeeds module.")
+    logging.info("[+]shivapushtodb Module: Calling sendfiles module.")
     subprocess.Popen(['python', os.path.dirname(os.path.realpath(__file__)) + '/hpfeeds/sendfiles.py'])
         
 def cleanup():
