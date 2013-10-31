@@ -82,7 +82,7 @@ dbcreate () {
                printf "\n\t    provide neccesary connection parameters in 'database' section."
                printf "\n\t[+] Execute dbcreate.py in shiva folder as \"python dbcreate.py\"\n"
                printf "\n\t[+] Refer to User Manual for detailed instructions\n"
-               printf "\n\t[+] For remote database; provide necessary connection parameters in 'database' section."
+               printf "\n\t[+] For remote database; provide necessary connection parameters in 'database' section\n"
                read -p "Press enter to continue installation...";;
                
         [Nn]*) printf "\n[*] Setting \"localdb : False\" in shiva.conf.\n";;
@@ -178,7 +178,9 @@ create_dirs () {
     mkdir $INSTALL_PATH/distorted
     mkdir $INSTALL_PATH/attachments
     mkdir $INSTALL_PATH/attachments/inlines
+    mkdir $INSTALL_PATH/attachments/hpfeedattach
     mkdir $INSTALL_PATH/rawspams
+    mkdir $INSTALL_PATH/rawspams/hpfeedspam
     
     ESCAPED_PATH=$(echo $INSTALL_PATH | sed -s 's/\//\\\//g')
     
@@ -186,8 +188,10 @@ create_dirs () {
     sed -i "s/queuepath : somepath/queuepath : $ESCAPED_PATH\/queue\//g" $INSTALL_PATH/shiva.conf
     sed -i "s/undeliverable_path : somepath/undeliverable_path : $ESCAPED_PATH\/distorted\//g" $INSTALL_PATH/shiva.conf
     sed -i "s/rawspampath : somepath/rawspampath : $ESCAPED_PATH\/rawspams\//g" $INSTALL_PATH/shiva.conf
+    sed -i "s/hpfeedspam : somepath/hpfeedspam : $ESCAPED_PATH\/rawspams\/hpfeedspam\//g" $INSTALL_PATH/shiva.conf
     sed -i "s/attachpath : somepath/attachpath : $ESCAPED_PATH\/attachments\//g" $INSTALL_PATH/shiva.conf
     sed -i "s/inlinepath : somepath/inlinepath : $ESCAPED_PATH\/attachments\/inlines\//g" $INSTALL_PATH/shiva.conf
+    sed -i "s/hpfeedattach : somepath/hpfeedattach : $ESCAPED_PATH\/attachments\/hpfeedattach\//g" $INSTALL_PATH/shiva.conf
     printf "\n[+] All done - phew!!!. Refer to User Manual to further customize exim MTA, shiva.conf configuration file and starting honeyp0t\n\n"
 
 }
