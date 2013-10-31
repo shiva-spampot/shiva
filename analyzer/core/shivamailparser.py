@@ -80,9 +80,9 @@ def movebadsample(key, msg):
     """Copies the troublesome spam to different folder and removes it from 
     queue.
     """
-	queuepath = server.shivaconf.get('global', 'queuepath')
-	undeliverable_path = server.shivaconf.get('analyzer', 'undeliverable_path')
-	notify = server.shivaconf.getboolean('notification', 'enabled')
+    queuepath = server.shivaconf.get('global', 'queuepath')
+    undeliverable_path = server.shivaconf.get('analyzer', 'undeliverable_path')
+    notify = server.shivaconf.getboolean('notification', 'enabled')
     
     logging.critical("\n**** [-] Error!!! ****")
     logging.critical("Copying spam file to distortedSamples directory before \
