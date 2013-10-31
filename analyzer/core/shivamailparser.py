@@ -14,6 +14,7 @@ import datetime
 import hashlib
 import base64
 import ConfigParser
+import shutil
 from email.utils import parseaddr
 
 import ssdeep
@@ -21,14 +22,6 @@ import ssdeep
 import shivaconclude
 import shivanotifyerrors
 import server
-
-confpath = os.path.dirname(os.path.realpath(__file__)) + "/../../../../../shiva.conf"
-shivaconf = ConfigParser.ConfigParser()
-shivaconf.read(confpath)
-
-queuepath = shivaconf.get('global', 'queuepath')
-undeliverable_path = shivaconf.get('analyzer', 'undeliverable_path')
-notify = shivaconf.getboolean('notification', 'enabled')
 
 
 # Global dictionary to store parsed fields of spam
@@ -87,12 +80,16 @@ def movebadsample(key, msg):
     """Copies the troublesome spam to different folder and removes it from 
     queue.
     """
+	queuepath = server.shivaconf.get('global', 'queuepath')
+	undeliverable_path = server.shivaconf.get('analyzer', 'undeliverable_path')
+	notify = server.shivaconf.getboolean('notification', 'enabled')
+    
     logging.critical("\n**** [-] Error!!! ****")
     logging.critical("Copying spam file to distortedSamples directory before \
       moving it out of queue")
-    shutil.copyfile(queuePath + key, undeliverable_path + key)
+    shutil.copyfile(queuepath + 'new/' + key, undeliverable_path + key)
     if notify is True:
-	shivanotifyerrors.notifydeveloper(msg)
+		shivanotifyerrors.notifydeveloper(msg)
     
 def writepartsrecurse(msg):
     """This module recursively parses all fields of multipart spam mail

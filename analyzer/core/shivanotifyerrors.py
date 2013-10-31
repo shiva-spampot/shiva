@@ -11,19 +11,14 @@ import smtplib
 import ConfigParser
 import server
 
-confpath = os.path.dirname(os.path.realpath(__file__)) + "/../../../../../shiva.conf"
-shivaconf = ConfigParser.ConfigParser()
-shivaconf.read(confpath)
-
-senderid = shivaconf.get('notification', 'sender')
-recipient = shivaconf.get('notification', 'recipient')
-smtphost = shivaconf.get('analyzer', 'relayhost')
-smtpport = shivaconf.get('analyzer', 'relayport')
-
-
 
 ## Error notification in case script confronts any issue
 def notifydeveloper(msg):
+	senderid = server.shivaconf.get('notification', 'sender')
+	recipient = server.shivaconf.get('notification', 'recipient')
+	smtphost = server.shivaconf.get('analyzer', 'relayhost')
+	smtpport = server.shivaconf.get('analyzer', 'relayport')
+
   message = """From: SHIVA spamp0t <my.spamp0t@somedomain.com>
 To: Developer <developer@somedomain.com>
 MIME-Version: 1.0
