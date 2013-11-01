@@ -27,6 +27,7 @@ $ sudo pip install MySQL-python
 Setting Up
 ----------
 * Edit `dbcreate.py` and provide the necessary database parameters.
+* Edit `corelate.py` and provide the necessary database parameters.
 * Make two folders where you want to run this, namely `spams` and `attach`
 * Create database by executing dbcreate.py as `python dbcreate.py`
 * Edit `subscribe.py` and provide necessary Hpfeeds parameters.

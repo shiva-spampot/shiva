@@ -9,6 +9,9 @@ import cPickle
 import os
 import ssdeep
 import sys
+import logging
+import time
+import datetime
 
 path = "spams/"
 
@@ -31,11 +34,14 @@ def dbconnect():
 def queuereceiver():
     while True:
         files = os.listdir(path)
-        for spam_file in files:
-            with open(path + spam_file, "rb") as fp:
-                record = cPickle.load(fp)
-            conclude(record)
-            os.remove(path + spam_file)
+        if len(files) > 0:
+            for spam_file in files:
+                with open(path + spam_file, "rb") as fp:
+                    record = cPickle.load(fp)
+                conclude(record)
+                os.remove(path + spam_file)
+        else:
+            print "wake me up when something comes.....sleeping at %s" % datetime.datetime.now()
                         
 def conclude(record):
     fetchfromdb = "SELECT `id`, `ssdeep`, `length` FROM `spam` WHERE 1"

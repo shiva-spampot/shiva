@@ -6,9 +6,9 @@ Creates database where all the data received from Hpfeeds will be saved.
 import os
 import sys
 
-HOST = " "
-USER = " "
-PASSWD = " "
+HOST = ""
+USER = ""
+PASSWD = ""
 
 def createdb():
     try:
