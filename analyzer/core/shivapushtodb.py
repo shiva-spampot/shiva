@@ -103,6 +103,7 @@ def push():
           
     subprocess.Popen(['python', os.path.dirname(os.path.realpath(__file__)) + '/shivamaindb.py'])
     logging.info("Shivamaindb called")
+    exeSql.close()
   
 def sendfeed():
     sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/hpfeeds/")
@@ -149,7 +150,6 @@ def sendfeed():
     subprocess.Popen(['python', os.path.dirname(os.path.realpath(__file__)) + '/hpfeeds/sendfiles.py'])
         
 def cleanup():
-    exeSql.close()
     del server.QueueReceiver.records[:]
     server.QueueReceiver.totalRelay = 0
     logging.info("[+]shivapushtodb Module: List and global list counter resetted.")
