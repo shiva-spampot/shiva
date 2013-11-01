@@ -69,7 +69,7 @@ helpers () {
 
 dbcreate () {
     printf "\nDo you wish to store analyzed data in database?" 
-    printf "Instead, you can have following setups:"
+    printf "\nYou can opt to have following setups:"
     printf "\n\t[+] Store data in local/remote database, or"
     printf "\n\t[+] Do not store but push all data to hpfeeds, or"
     printf "\n\t[+] Store data in local/remote database and push data to hpfeeds as well\n\n"
