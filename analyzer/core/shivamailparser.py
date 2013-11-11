@@ -41,7 +41,7 @@ def md5checksum(filepath):
 def linkparser(input_body):
     """Returns a list containing URLs.
     """
-    url_list = re.compile(r'http.?://[a-z,/,\.,\d,\?,=,\-,\+,#,_,&,;,\,,:,@,%,]*', re.IGNORECASE).findall(input_body)
+    url_list = re.compile(r'[http.?://]?[a-z,/,\.,\d,\?,=,\-,\+,#,_,&,;,\,,:,@,%,]*', re.IGNORECASE).findall(input_body)
     url_list = list(set(url_list))
     return url_list
 
