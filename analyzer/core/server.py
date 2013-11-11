@@ -128,8 +128,8 @@ class Relay(object):
             logging.exception("Failed to connect to host %s:%d" % (hostname, self.port))
             return
 
-        #relay_host.sendmail(sender, recipient, str(message))
-        relay_host.sendmail(sender, recipient.split(","), str(message))						# Shiva - sendmail needs 'list' of recipients not strings
+        relay_host.sendmail(sender, recipient, str(message))
+        #relay_host.sendmail(sender, recipient.split(","), str(message))	# Shiva - sendmail needs 'list' of recipients not strings. Fixed in lamson now.
         relay_host.quit()
 
     def resolve_relay_host(self, To):
