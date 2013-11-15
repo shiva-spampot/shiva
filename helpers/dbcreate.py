@@ -2,7 +2,8 @@ import os
 import sys
 import ConfigParser
 
-confpath = os.path.dirname(os.path.realpath(__file__)) + "/shiva.conf"
+confpath = os.path.dirname(os.path.realpath(__file__)) + "/../shiva/shiva.conf"
+print "confpath: ", confpath
 shivaconf = ConfigParser.ConfigParser()
 shivaconf.read(confpath)
 
