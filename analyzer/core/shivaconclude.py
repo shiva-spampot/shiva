@@ -10,7 +10,6 @@ import logging
 
 import server
 import ssdeep
-
 import shivaaddnewrecord
 import shivaprocessold
 
@@ -48,9 +47,9 @@ def main(mailFields, key, msgMailRequest):
         for record in records:
 
             if record['len'] >= minLen and record['len'] <= maxLen:
-
-                if mailFields['s_id'] is record['s_id']:
+                if mailFields['s_id'] == record['s_id']:
                     shivaprocessold.main(mailFields, record['s_id'], key, msgMailRequest)
+                    break
 
                 else:
                     ratio = ssdeep.compare(mailFields['ssdeep'], record['ssdeep'])
