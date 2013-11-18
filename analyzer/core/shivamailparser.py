@@ -41,7 +41,7 @@ def md5checksum(filepath):
 def linkparser(input_body):
     """Returns a list containing URLs.
     """
-    url_list = re.compile(r'[http.?://]?[a-z,/,\.,\d,\?,=,\-,\+,#,_,&,;,\,,:,@,%,]*', re.IGNORECASE).findall(input_body)
+    url_list = re.compile(r'http.?://[a-z,/,\.,\d,\?,=,\-,\+,#,_,&,;,\,,:,@,%,]*', re.IGNORECASE).findall(input_body)
     url_list = list(set(url_list))
     return url_list
 
@@ -89,7 +89,7 @@ def movebadsample(key, msg):
       moving it out of queue")
     shutil.copyfile(queuepath + 'new/' + key, undeliverable_path + key)
     if notify is True:
-		shivanotifyerrors.notifydeveloper(msg)
+        shivanotifyerrors.notifydeveloper(msg)
     
 def writepartsrecurse(msg):
     """This module recursively parses all fields of multipart spam mail
