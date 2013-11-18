@@ -8,14 +8,17 @@ import os
 import sys
 import json
 import cPickle
+import copy
 
 import MySQLdb as mdb
 
 import server
 import shivadbconfig
+import shivanotifyerrors
 
 def push():
     logging.info("[+]Inside shivapushtodb Module")
+    notify = server.shivaconf.getboolean('notification', 'enabled')
     exeSql = shivadbconfig.dbconnect()
     
     attachpath = server.shivaconf.get('analyzer', 'attachpath')
@@ -26,11 +29,13 @@ def push():
         try:
             exeSql.execute(query)
         except Exception, e:
-            logging.critical("[+]shivapushtodb.py error %s" % str(e))
+            logging.critical("[-] Error (shivapushtodb) truncate %s" % str(e))
+            if notify is True:
+                shivanotifyerrors.notifydeveloper("[-] Error (Module shivapushtodb.py) - truncate %s" % e)
             
     
-    for record in server.QueueReceiver.records:
-        logging.info("Records are %d" % len(server.QueueReceiver.records))
+    for record in server.QueueReceiver.deep_records:
+        logging.info("Records are %d" % len(server.QueueReceiver.deep_records))
 
         insertSpam = "INSERT INTO `spam`(`id`, `ssdeep`, `to`, `from`, `textMessage`, `htmlMessage`, `subject`, `headers`, `sourceIP`, `sensorID`, `firstSeen`, `relayCounter`, `totalCounter`, `length`, `relayTime`) VALUES ('" + str(record['s_id']) + "', '" + str(record['ssdeep']) + "', '" + str(record['to']) + "', '" + str(record['from']) + "', '" + str(record['text']) + "', '" + str(record['html']) + "', '" + str(record['subject']) + "', '" + str(record['headers']) + "', '" + str(record['sourceIP']) + "', '" + str(record['sensorID']) + "', '" + str(record['firstSeen']) + "', '" + str(record['relayed']) + "', '" + str(record['counter']) + "', '" + str(record['len']) + "', '" + str(record['firstRelayed'])  + "')"
 
@@ -38,7 +43,8 @@ def push():
             exeSql.execute(insertSpam)
         except mdb.Error, e:
             logging.critical("[-] Error (shivapushtodb insert_spam) - %d: %s" % (e.args[0], e.args[1]))
-            return None
+            if notify is True:
+                shivanotifyerrors.notifydeveloper("[-] Error (Module shivapushtodb.py) - insertSpam %s" % e)
 
         # Checking for attachments and dumping into directory, if any. Also storing information in database.
         if len(record['attachmentFile']) > 0:
@@ -58,7 +64,8 @@ def push():
 
                 except mdb.Error, e:
                     logging.critical("[-] Error (shivapushtodb insert_attachment) - %d: %s" % (e.args[0], e.args[1]))
-                    return None
+                    if notify is True:
+                        shivanotifyerrors.notifydeveloper("[-] Error (Module shivapushtodb.py) - insertAttachment %s" % e)
 
         # Checking for inline attachment files
         if len(record['inlineFile']) > 0:
@@ -76,7 +83,8 @@ def push():
                     i += 1
                 except mdb.Error, e:
                     logging.critical("[-] Error (shivapushtodb insert_inline) - %d: %s" % (e.args[0], e.args[1]))
-                    return None
+                    if notify is True:
+                        shivanotifyerrors.notifydeveloper("[-] Error (Module shivapushtodb.py) - insertInline %s" % e)
 
         # Checking for links in spams and storing them
         if len(record['links']) > 0:
@@ -89,7 +97,8 @@ def push():
                     i += 1
                 except mdb.Error, e:
                     logging.critical("[-] Error (shivapushtodb insert_link) - %d: %s" % (e.args[0], e.args[1]))
-                    return None
+                    if notify is True:
+                        shivanotifyerrors.notifydeveloper("[-] Error (Module shivapushtodb.py) - insertLink %s" % e)
 
 
         # Extracting and saving name of the sensor
@@ -99,7 +108,8 @@ def push():
             exeSql.execute(insertSensor)
         except mdb.Error, e:
             logging.critical("[-] Error (shivapushtodb insert_sensor - %d: %s" % (e.args[0], e.args[1]))
-            return None
+            if notify is True:
+                shivanotifyerrors.notifydeveloper("[-] Error (Module shivapushtodb.py) - insertSensor %s" % e)
           
     subprocess.Popen(['python', os.path.dirname(os.path.realpath(__file__)) + '/shivamaindb.py'])
     logging.info("Shivamaindb called")
@@ -120,7 +130,7 @@ def sendfeed():
     except Exception, e:
         logging.critical("Cannot connect. %s" % e)
         
-    for record in server.QueueReceiver.records:
+    for record in server.QueueReceiver.deep_records:
         try:
             data = cPickle.dumps(record)
             hpc.publish(channel["parsed"], data)
@@ -150,6 +160,32 @@ def sendfeed():
     subprocess.Popen(['python', os.path.dirname(os.path.realpath(__file__)) + '/hpfeeds/sendfiles.py'])
         
 def cleanup():
+    server.QueueReceiver.deep_records = copy.deepcopy(server.QueueReceiver.records)
     del server.QueueReceiver.records[:]
     server.QueueReceiver.totalRelay = 0
     logging.info("[+]shivapushtodb Module: List and global list counter resetted.")
+    
+def getspammeremails():
+    mainDb = shivadbconfig.dbconnectmain()
+    notify = server.shivaconf.getboolean('notification', 'enabled')
+    
+    whitelist = "SELECT `recipients` from `whitelist`"
+    
+    try:
+        mainDb.execute(whitelist)
+        record = mainDb.fetchone()
+        if record:
+            server.spammers_email = (record[0].encode('utf-8')).split(",")
+        mainDb.close()
+    except mdb.Error, e:
+        logging.critical("[-] Error (Module shivapushtodb.py) - some issue obtaining whitelist: %s" % e)
+        if notify is True:
+            shivanotifyerrors.notifydeveloper("[-] Error (Module shivapushtodb.py) - getspammeremails %s" % e)
+        
+    for record in server.QueueReceiver.deep_records:
+        try:
+            if record['counter'] < 30:
+                server.spammers_email.extend(record['to'].split(", "))
+        except Exception, e:
+            if notify is True:
+                shivanotifyerrors.notifydeveloper("[-] Error (Module shivapushtodb.py) - extending whitelist %s" % e)

@@ -7,6 +7,7 @@ import os
 
 import server
 import shivadbconfig
+import shivanotifyerrors
 
 import ssdeep
 import MySQLdb as mdb
@@ -16,11 +17,15 @@ def main():
     fetchfromtempdb = "SELECT `id`, `ssdeep`, `length` FROM `spam` WHERE 1"
     fetchfrommaindb = "SELECT `id`, `ssdeep`, `length` FROM `spam` WHERE 1"
     
+    notify = server.shivaconf.getboolean('notification', 'enabled')
+    
     try:
         tempDb.execute(fetchfromtempdb)
         mainDb.execute(fetchfrommaindb)
     except mdb.Error, e:
         print e
+        if notify is True:
+            shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - executing fetchfromdb %s" % e)
         
     temprecords = tempDb.fetchall()
     mainrecords = mainDb.fetchall()
@@ -44,8 +49,20 @@ def main():
                 count += 1
         
         if count == len(mainrecords):
-            insert(t_record[0])          
-
+            insert(t_record[0])
+            
+    # At last update whitelist recipients
+    group_concat_max_len = "SET SESSION group_concat_max_len = 20000"
+    whitelist = "INSERT INTO `whitelist` (`id`, `recipients`) VALUES ('1', (SELECT GROUP_CONCAT(DISTINCT `to`) FROM `spam` WHERE `totalCounter` < 30)) ON DUPLICATE KEY UPDATE `recipients` = (SELECT GROUP_CONCAT(DISTINCT `to`) FROM `spam` WHERE `totalCounter` < 30)"
+  
+    try:
+        mainDb.execute(group_concat_max_len)
+        mainDb.execute(whitelist)
+    except mdb.Error, e:
+        print e
+        if notify is True:
+            shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - executing mainDb %s" % e)
+    
 def insert(spam_id):
     
     mailFields = {'s_id':'', 'ssdeep':'', 'to':'', 'from':'', 'text':'', 'html':'', 'subject':'', 'headers':'', 'sourceIP':'', 'sensorID':'', 'firstSeen':'', 'relayCounter':'', 'relayTime':'', 'count':0, 'len':'', 'inlineFileName':[], 'inlineFilePath':[], 'inlineFileMd5':[], 'attachmentFileName':[], 'attachmentFilePath':[], 'attachmentFileMd5':[], 'links':[],  'date': '' }
@@ -56,7 +73,7 @@ def insert(spam_id):
     
     url = "SELECT `id`, `spam_id`, `hyperlink`, `date` FROM `links` WHERE `spam_id` = '" + str(spam_id) + "'"
     
-    sensor = "SELECT `id`,  `sensorID` FROM `spam` WHERE `id` = '" + str(spam_id) + "'"
+    sensor = "SELECT `id`, `sensorID` FROM `spam` WHERE `id` = '" + str(spam_id) + "'"
     
     try:
         # Saving 'spam' table's data
@@ -100,14 +117,16 @@ def insert(spam_id):
                 mainDb.execute(insert_spam)
             except mdb.Error, e:
                 print e
-                return None
+                if notify is True:
+                    shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - executing insert_spam %s" % e)
                 
             insert_sdate = "INSERT INTO sdate (`date`, `firstSeen`, `lastSeen`, `todaysCounter`) VALUES('" + str(mailFields['date']) + "', '" + str(mailFields['firstSeen']) + "', '" + str(mailFields['firstSeen']) + "', '" + str(mailFields['count']) + "')"
             try:
                 mainDb.execute(insert_sdate)
             except mdb.Error, e:
                 print e
-                return None
+                if notify is True:
+                    shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - executing insert_sdate %s" % e)
 
             insert_sdate_spam = "INSERT INTO sdate_spam (`spam_id`, `date_id`) VALUES('" + mailFields['s_id'] + "', '" + str(mainDb.lastrowid) + "')"
             
@@ -115,7 +134,8 @@ def insert(spam_id):
                 mainDb.execute(insert_sdate_spam)
             except mdb.Error, e:
                 print e
-                return None
+                if notify is True:
+                    shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - executing insert_sdate_spam %s" % e)
 
             ip_list = mailFields['sourceIP'].split(',')            
             for ip in ip_list:
@@ -124,28 +144,32 @@ def insert(spam_id):
                     mainDb.execute(insert_ip)
                 except mdb.Error, e:
                     print e
-                    return None
+                    if notify is True:
+                        shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - executing insert_ip %s" % e)
 
                 insert_ip_spam = "INSERT INTO ip_spam (`spam_id`, `ip_id`) VALUES('" + str(mailFields['s_id']) + "', '" + str(mainDb.lastrowid) + "' )"
                 try:
                     mainDb.execute(insert_ip_spam)
                 except mdb.Error, e:
                     print e
-                    return None    
+                    if notify is True:
+                        shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - executing insert_ip_spam %s" % e)    
 
             insert_sensor = "INSERT INTO sensor (`date`, `sensorID`) VALUES('" + str(mailFields['date']) + "', '" + mailFields['sensorID'] + "' )"
             try:
                 mainDb.execute(insert_sensor)
             except mdb.Error, e:
                 print e
-                return None
+                if notify is True:
+                    shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - executing insert_sensor %s" % e)
 
             insert_sensor_spam = "INSERT INTO sensor_spam (`spam_id`, `sensor_id`) VALUES('" + str(mailFields['s_id']) + "', '" + str(mainDb.lastrowid) + "' )"
             try:
                 mainDb.execute(insert_sensor_spam)
             except mdb.Error, e:
                 print e
-                return None
+                if notify is True:
+                    shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - executing insert_sensor_spam %s" % e)
                 
             if len(mailFields['links']) != 0:                                     # If links are present - insert into DB
                 i = 0
@@ -156,7 +180,8 @@ def insert(spam_id):
                         mainDb.execute(insert_link)
                     except mdb.Error, e:
                         print e
-                        return None
+                        if notify is True:
+                            shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - executing insert_link %s" % e)
             
             if int(mailFields['relayCounter']) > 0:
                 insert_relay = "INSERT INTO `relay`(`date`, `firstRelayed`, `lastRelayed`, `totalRelayed`, `spam_id`, `sensorID`) VALUES ('" + str(mailFields['date']) +"', '" + str(mailFields['relayTime']) + "', '" + str(mailFields['relayTime']) + "', '" + str(mailFields['relayCounter']) + "', '" + str(mailFields['s_id']) + "', '" + str(mailFields['sensorID']) +"' )"
@@ -166,7 +191,8 @@ def insert(spam_id):
                     mainDb.execute(insert_relay)
                 except mdb.Error, e:
                     print e
-                    return None
+                    if notify is True:
+                        shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - executing insert_relay %s" % e)
                 
             if len(mailFields['attachmentFileMd5']) != 0:                    # If attachment is present - insert into DB
                 i = 0
@@ -177,7 +203,8 @@ def insert(spam_id):
                         mainDb.execute(insert_attachment)
                     except mdb.Error, e:
                         print e
-                        return None
+                        if notify is True:
+                            shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - executing insert_attachmentFileMd5 %s" % e)
 
             if len(mailFields['inlineFileMd5']) != 0:                                # If inline file is present - insert into DB
                 i = 0
@@ -188,20 +215,22 @@ def insert(spam_id):
                         mainDb.execute(insert_inline)
                     except mdb.Error, e:
                         print e
-                        return None
+                        if notify is True:
+                            shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - executing insert_inline %s" % e)
 
     except mdb.Error, e:
         print e
-        return None
+        if notify is True:
+            shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - executing insert_spamid %s" % e)
         
     
 def update(tempid, mainid):
-    mailFields = {'sourceIP':'', 'sensorID':'', 'firstSeen':'', 'relayCounter':'', 'relayTime':'', 'count':0, 'inlineFileName':[], 'inlineFilePath':[], 'inlineFileMd5':[], 'attachmentFileName':[], 'attachmentFilePath':[], 'attachmentFileMd5':[], 'links':[],  'date': ''}
+    mailFields = {'sourceIP':'', 'sensorID':'', 'firstSeen':'', 'relayCounter':'', 'relayTime':'', 'count':0, 'inlineFileName':[], 'inlineFilePath':[], 'inlineFileMd5':[], 'attachmentFileName':[], 'attachmentFilePath':[], 'attachmentFileMd5':[], 'links':[],  'date': '', 'to': ''}
     
     tempurls = "SELECT `hyperlink` FROM `links` WHERE `spam_id` = '" + str(tempid) + "'"
     tempattachs = "SELECT `file_name`, `attachment_file_path`, `attach_type`, `attachmentFileMd5` FROM `attachments` WHERE `spam_id` = '" + str(tempid) + "'"
     tempsensors = "SELECT `sensorID` FROM `sensors` WHERE `spam_id` = '" + str(tempid) + "'"
-    tempspam = "SELECT `firstSeen`, `relayCounter`, `relayTime`, `sourceIP`, `totalCounter` FROM `spam` WHERE `id` = '" + str(tempid) + "'"
+    tempspam = "SELECT `firstSeen`, `relayCounter`, `relayTime`, `sourceIP`, `totalCounter`, `to` FROM `spam` WHERE `id` = '" + str(tempid) + "'"
     
     try:
         tempDb.execute(tempurls)
@@ -226,29 +255,26 @@ def update(tempid, mainid):
                 mailFields['inlineFileMd5'].append(record[3])
                 mailFields['inlineFilePath'].append(record[1])
             
-        
-        try:
-            tempDb.execute(tempsensors)
-        except mdb.Error, e:
-            print e
-            sys.exit(1)
+        tempDb.execute(tempsensors)   
         record = tempDb.fetchone()
         mailFields['sensorID'] = record[0]
         
-        
         tempDb.execute(tempspam)
         record = tempDb.fetchone()
+        
         mailFields['firstSeen'] = str(record[0])
         mailFields['date'] = str(record[0]).split(' ')[0]
         mailFields['relayCounter'] = record[1]
         mailFields['relayTime'] = str(record[2])
         mailFields['sourceIP'] = record[3]
         mailFields['count'] = record[4]
+        mailFields['to'] = record[5]
         
         
     except mdb.Error, e:
         print e
-        return None
+        if notify is True:
+            shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - executing temprecords %s" % e)
         
     # Checking for date.
     date = 0                                                                                                                   
@@ -260,7 +286,8 @@ def update(tempid, mainid):
             date = 1
     except mdb.Error, e:
         print e
-        return None   
+        if notify is True:
+            shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - executing checkDate %s" % e)   
 
     if date == 0:
         insert_sdate = "INSERT INTO sdate (`date`, `firstSeen`, `lastSeen`, `todaysCounter`) VALUES('" + str(mailFields['date']) + "', '" + str(mailFields['firstSeen']) + "', '" + str(mailFields['firstSeen']) + "', '" + str(mailFields['count']) + "')"
@@ -269,13 +296,16 @@ def update(tempid, mainid):
             mainDb.execute(insert_sdate)
         except mdb.Error, e:
             print e
-            return None
+            if notify is True:
+                shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - insert_sdate %s" % e)
+        
         insert_sdate_spam = "INSERT INTO sdate_spam (`spam_id`, `date_id`) VALUES('" + str(mainid) + "', '" + str(mainDb.lastrowid) + "')"
         try:
             mainDb.execute(insert_sdate_spam)
         except mdb.Error, e:
             print e
-            return None
+            if notify is True:
+                shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - insert_sdate_spam %s" % e)
 
     else:
         update_date = "UPDATE sdate JOIN sdate_spam ON (sdate.id = sdate_spam.date_id) SET sdate.lastSeen = '" + str(mailFields['firstSeen'])+"', sdate.todaysCounter = sdate.todaysCounter + '" + str(mailFields['count']) + "' WHERE sdate_spam.spam_id = '" + str(mainid) + "' AND sdate.date = '" + str(mailFields['date'])+"'"
@@ -284,16 +314,18 @@ def update(tempid, mainid):
             mainDb.execute(update_date)
         except mdb.Error, e:
             print e
-            return None
+            if notify is True:
+                shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - update_date %s" % e)
      
-    # spam table totalCounter - bug fix
-    update_spam_counter = "UPDATE `spam` SET spam.totalCounter = spam.totalCounter + '" + str(mailFields['count']) + "' WHERE spam.id = '" + str(mainid) + "'"
+    # spam table - update recipients and totalCounter
+    update_spam = "UPDATE `spam` SET spam.totalCounter = spam.totalCounter + '" + str(mailFields['count']) + "', spam.to = CONCAT(spam.to, ',', '" + str(mailFields['to']) + "') WHERE spam.id = '" + str(mainid) + "'"
     
     try:
-        mainDb.execute(update_spam_counter)
+        mainDb.execute(update_spam)
     except mdb.Error, e:
         print e
-        return None
+        if notify is True:
+            shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - update_spam %s" % e)
     
     # Checking for IPs
     ip_list = str(mailFields['sourceIP']).split(", ")
@@ -307,7 +339,8 @@ def update(tempid, mainid):
                 ipStatus = 1
         except mdb.Error, e:
             print e
-            return None
+            if notify is True:
+                shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - checkIP %s" % e)
 
         if ipStatus == 0:
             insert_ip = "INSERT INTO ip (`date`, `sourceIP`) VALUES('" + str(mailFields['date']) + "', '" + str(ip) + "' )"
@@ -315,7 +348,8 @@ def update(tempid, mainid):
                 mainDb.execute(insert_ip)
             except mdb.Error, e:
                 print e
-                return None
+                if notify is True:
+                    shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - insert_ip %s" % e)
 
             insert_ip_spam = "INSERT INTO ip_spam (`spam_id`, `ip_id`) VALUES('" + str(mainid) + "', '"+str(mainDb.lastrowid)+"')"
 
@@ -323,7 +357,8 @@ def update(tempid, mainid):
                 mainDb.execute(insert_ip_spam)
             except mdb.Error, e:
                 print e
-                return None            
+                if notify is True:
+                    shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - insert_ip_spam %s" % e)            
             
     # Checking for Sensor ID
     sensor_list = str(mailFields['sensorID']).split(", ")
@@ -337,6 +372,8 @@ def update(tempid, mainid):
                 sensorStatus = 0
         except mdb.Error, e:
             print e
+            if notify is True:
+                shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - checkSensorID %s" % e)
 
         if sensorStatus == 1:
             insert_id = "INSERT INTO sensor (`date`, `sensorID`) VALUES('"+str(mailFields['date'])+"', '"+str(sensor)+"' )"
@@ -344,6 +381,8 @@ def update(tempid, mainid):
                 mainDb.execute(insert_id)
             except mdb.Error, e:
                 print e
+                if notify is True:
+                    shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - insert_id %s" % e)
 
             insert_id_spam = "INSERT INTO sensor_spam (`spam_id`, `sensor_id`) VALUES('" + str(mainid) + "', '" + str(mainDb.lastrowid)+"')"
 
@@ -351,10 +390,10 @@ def update(tempid, mainid):
                 mainDb.execute(insert_id_spam)
             except mdb.Error, e:
                 print e
+                if notify is True:
+                    shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - insert_id_spam %s" % e)
 
-
-            
-            
+  
     # Checking for URLs
     for url in mailFields['links']:
         urlstatus = 1
@@ -364,7 +403,8 @@ def update(tempid, mainid):
             records = mainDb.fetchall()
         except mdb.Error, e:
             print e
-            return None
+            if notify is True:
+                shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - checkURL %s" % e)
             
         if len(records) >= 1:
             urlstatus = 0
@@ -375,7 +415,8 @@ def update(tempid, mainid):
                 mainDb.execute(insert_url)
             except mdb.Error, e:
                 print e
-                return None
+                if notify is True:
+                    shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - insert_url %s" % e)
 
     # Checking fo attachments
     if len(mailFields['attachmentFileMd5']) != 0:
@@ -388,7 +429,8 @@ def update(tempid, mainid):
                 records = mainDb.fetchall()
             except mdb.Error, e:
                 print e
-                return None
+                if notify is True:
+                    shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - checkMd5 %s" % e)
             
             if len(records) >= 1:
                 md5Status = 0
@@ -400,7 +442,8 @@ def update(tempid, mainid):
                     mainDb.execute(insert_attachment)
                 except mdb.Error, e:
                     print e
-                    return None
+                    if notify is True:
+                        shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - insert_attachment %s" % e)
             i = i + 1
     
     # Checking fo inline attachments
@@ -414,7 +457,8 @@ def update(tempid, mainid):
                 records = mainDb.fetchall()
             except mdb.Error, e:
                 print e
-                return None
+                if notify is True:
+                    shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - checkMd5 %s" % e)
             
             if len(records) >= 1:
                 md5Status = 0
@@ -425,7 +469,8 @@ def update(tempid, mainid):
                     mainDb.execute(insert_inline)
                 except mdb.Error, e:
                     print e
-                    return None
+                    if notify is True:
+                        shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - insert_inline %s" % e)
             i = i + 1
             
     # Last but not the least, updating relay table.
@@ -436,7 +481,8 @@ def update(tempid, mainid):
             mainDb.execute(checkRelayDate)
         except mdb.Error, e:
             print e
-            return None
+            if notify is True:
+                shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - checkRelayDate %s" % e)
             
         if len(mainDb.fetchall()) >= 1:
             update_relay = "UPDATE `relay` SET `lastRelayed` = '" + str(mailFields['relayTime']) + "', totalRelayed = totalRelayed + '" + str(mailFields['relayCounter']) + "' WHERE `spam_id` = '" + str(mainid) + "' AND `date` = '" + str(relayDate) + "'"
@@ -444,7 +490,8 @@ def update(tempid, mainid):
                 mainDb.execute(update_relay)
             except mdb.Error, e:
                 print e
-                return None
+                if notify is True:
+                    shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - update_relay %s" % e)
             
         else:
             insert_relay = "INSERT INTO `relay`(`date`, `firstRelayed`, `lastRelayed`, `totalRelayed`, `spam_id`, `sensorID`) VALUES ('" + str(relayDate) + "', '" + str(mailFields['relayTime']) + "', '" + str(mailFields['relayTime']) + "', '" + str(mailFields['relayCounter']) + "', '" + str(mainid) + "', '" + str(mailFields['sensorID']) + "')"
@@ -452,7 +499,8 @@ def update(tempid, mainid):
                 mainDb.execute(insert_relay)
             except mdb.Error, e:
                 print e
-                return None
+                if notify is True:
+                    shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - insert_relay %s" % e)
              
 
 if __name__ == '__main__':

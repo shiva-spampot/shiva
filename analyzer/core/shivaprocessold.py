@@ -3,6 +3,7 @@ import datetime
 
 import server
 
+
 def main(mailFields, matchedHash, key, msgMailRequest):
     logging.info("[+]Inside shivaprocessold Module.")
 
@@ -43,13 +44,22 @@ def main(mailFields, matchedHash, key, msgMailRequest):
             sensorIDs = record['sensorID'].split(", ")
             if mailFields['sensorID'] not in sensorIDs:
                 record['sensorID'] =  mailFields['sensorID'] + ", " + record['sensorID']
+                
+            recipients = record['to'].split(",")
+            if mailFields['to'] not in recipients:
+                record['to'] = record['to'] + "," + mailFields['to']
 
             record['counter'] += 1
             
             if relay_enabled is True:
                 relaycounter = server.shivaconf.getint('analyzer', 'globalcounter')
                 individualcounter = server.shivaconf.getint('analyzer', 'individualcounter')
-                if int(server.QueueReceiver.totalRelay) < relaycounter and int(record['relayed']) < individualcounter:
+                
+                # Following two lines are for debuggin, delete them later
+                value = mailFields['to'] in server.spammers_email
+                logging.info("\n[+]Spammers whitelist email-id found %s" % value)
+                
+                if (int(server.QueueReceiver.totalRelay) < relaycounter and int(record['relayed']) < individualcounter) | (mailFields['to'] in server.spammers_email):
                     logging.info("[+]shivaprocessold Module: Relay counter has not reached limit yet. Shall relay this.")
                     
                     # Following 3 lines does the relaying

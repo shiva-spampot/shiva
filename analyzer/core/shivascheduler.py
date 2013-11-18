@@ -12,6 +12,9 @@ import shivapushtodb
 import server
 
 def resetcounter():
+    shivapushtodb.cleanup()
+    shivapushtodb.getspammeremails()
+    
     localdb = server.shivaconf.getboolean('database', 'localdb')
     hpfeeds = server.shivaconf.getboolean('hpfeeds', 'enabled')    
  
@@ -23,7 +26,6 @@ def resetcounter():
         if hpfeeds is True:
             logging.info("[+]shivascheduler.py: Local db is disabled. Sending data to hpfeeds.")
             shivapushtodb.sendfeed()
-    shivapushtodb.cleanup()
 
 def schedule():
     sched = Scheduler()

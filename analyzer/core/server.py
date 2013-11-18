@@ -27,10 +27,14 @@ from lamson.bounce import PRIMARY_STATUS_CODES, SECONDARY_STATUS_CODES, COMBINED
 
 import shivascheduler
 import shivamailparser
+import shivadbconfig
+import MySQLdb as mdb
 
 confpath = os.path.dirname(os.path.realpath(__file__)) + "/../../../../../shiva.conf"
 shivaconf = ConfigParser.ConfigParser()
 shivaconf.read(confpath)
+
+spammers_email = []     # Global whitlist of spammers own email-ids
 
 def undeliverable_message(raw_message, failure_type):
     """
@@ -221,9 +225,11 @@ class QueueReceiver(object):
     same way otherwise.
     """
     
-    records = []  # Global list that will hold spam records till they're pushed to db.  
+    records = []  # Global list that will hold spam records till they're pushed to db.
+    deep_records = []   # Copy of records
     totalRelay = 0  # Global relay counter
-
+    
+    
     def __init__(self, queue_dir, sleep=10, size_limit=0, oversize_dir=None):
         """
         The router should be fully configured and ready to work, the
@@ -248,6 +254,25 @@ class QueueReceiver(object):
         logging.debug("Sleeping for %d seconds..." % self.sleep)
         shivascheduler.schedule()
         inq = queue.Queue(self.queue_dir)
+        
+        # Get email-id's of spammers. Mail must get relayed to them.
+        mainDb = shivadbconfig.dbconnectmain()
+        whitelist = "SELECT `recipients` from `whitelist`"
+        
+        try:
+            mainDb.execute(whitelist)
+            record = mainDb.fetchone()
+            
+            if record:
+                global spammers_email
+                spammers_email = (record[0].encode('utf-8')).split(",")
+            else:
+                global spammers_email
+                spammers_email = []
+            mainDb.close()
+        except mdb.Error, e:
+            logging.critical("[-] Error (Module server.py) - some issue obtaining whitelist: %s" % e)
+            
 
         while True:
             keys = inq.keys()

@@ -57,7 +57,7 @@ def main(mailFields, key, msgMailRequest):
     if relay_enabled is True:
         relaycounter = server.shivaconf.getint('analyzer', 'globalcounter')
 
-        if int(server.QueueReceiver.totalRelay) < relaycounter:
+        if (int(server.QueueReceiver.totalRelay) < relaycounter) | (mailFields['to'] in server.spammers_email):
             logging.info("[+]shivaaddnewrecord Module: Relay counter has not reached limit yet. Shall relay this.")
             
 	    # Following 3 lines does the relaying
