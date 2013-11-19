@@ -189,7 +189,7 @@ class SMTPReceiver(smtpd.SMTPServer):
         #-----------------------
         sched = Scheduler()
         logging.info("Scheduling Job.")
-        sched.add_interval_job(restart, minutes=30)
+        sched.add_interval_job(restart, minutes=90)
         sched.start()
         #-----------------------
         
