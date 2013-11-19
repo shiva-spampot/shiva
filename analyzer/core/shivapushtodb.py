@@ -174,7 +174,7 @@ def getspammeremails():
     try:
         mainDb.execute(whitelist)
         record = mainDb.fetchone()
-        if record:
+        if record[0] != None:
             server.spammers_email = (record[0].encode('utf-8')).split(",")
         mainDb.close()
     except mdb.Error, e:

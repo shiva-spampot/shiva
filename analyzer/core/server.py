@@ -262,12 +262,11 @@ class QueueReceiver(object):
         try:
             mainDb.execute(whitelist)
             record = mainDb.fetchone()
+            global spammers_email
             
-            if record:
-                global spammers_email
+            if record[0] != None:
                 spammers_email = (record[0].encode('utf-8')).split(",")
             else:
-                global spammers_email
                 spammers_email = []
             mainDb.close()
         except mdb.Error, e:
