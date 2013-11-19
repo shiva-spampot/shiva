@@ -213,7 +213,7 @@ CREATE TABLE IF NOT EXISTS `spam` (
 
 CREATE TABLE IF NOT EXISTS `whitelist` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `recipients` mediumtext CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
+  `recipients` mediumtext CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;
 
