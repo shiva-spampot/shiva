@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS `links` (
   `hyperlink` varchar(100) DEFAULT NULL COMMENT 'Hyperlink from the spam',
   `date` date NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=13 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS `sensors` (
   `sensorID` varchar(100) DEFAULT NULL COMMENT 'Sensor where spam was received',
   `date` date NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=12 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -67,7 +67,7 @@ CREATE TABLE IF NOT EXISTS `sensors` (
 CREATE TABLE IF NOT EXISTS `spam` (
   `id` varchar(32) NOT NULL COMMENT 'MD5 of the spam',
   `ssdeep` varchar(120) DEFAULT NULL COMMENT 'SSDeep hash of the mail',
-  `to` text CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
+  `to` mediumtext CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
   `from` varchar(200) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
   `textMessage` mediumtext CHARACTER SET utf8 COLLATE utf8_unicode_ci COMMENT 'body of spam in text format',
   `htmlMessage` mediumtext CHARACTER SET utf8 COLLATE utf8_unicode_ci COMMENT 'body of spam in html format',

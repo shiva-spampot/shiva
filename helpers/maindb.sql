@@ -65,7 +65,7 @@ CREATE TABLE IF NOT EXISTS `ip` (
   PRIMARY KEY (`id`),
   KEY `sourceIP` (`sourceIP`),
   KEY `date` (`date`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=160 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -80,7 +80,7 @@ CREATE TABLE IF NOT EXISTS `ip_spam` (
   PRIMARY KEY (`id`),
   KEY `ip_id` (`ip_id`),
   KEY `spam_id` (`spam_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=160 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -97,7 +97,7 @@ CREATE TABLE IF NOT EXISTS `links` (
   KEY `spam_id` (`spam_id`),
   KEY `hyperLink` (`hyperLink`),
   KEY `date` (`date`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=13 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -116,7 +116,7 @@ CREATE TABLE IF NOT EXISTS `relay` (
   PRIMARY KEY (`id`),
   KEY `spam_id` (`spam_id`),
   KEY `sensorID` (`sensorID`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=12 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -134,7 +134,7 @@ CREATE TABLE IF NOT EXISTS `sdate` (
   KEY `firstSeen` (`firstSeen`),
   KEY `lastSeen` (`lastSeen`),
   KEY `date` (`date`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=12 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -149,7 +149,7 @@ CREATE TABLE IF NOT EXISTS `sdate_spam` (
   PRIMARY KEY (`id`),
   KEY `spam_id` (`spam_id`),
   KEY `date_id` (`date_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=12 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -163,7 +163,7 @@ CREATE TABLE IF NOT EXISTS `sensor` (
   `sensorID` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL COMMENT 'Shiva sensor id',
   PRIMARY KEY (`id`),
   KEY `sensorID` (`sensorID`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=12 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -178,7 +178,7 @@ CREATE TABLE IF NOT EXISTS `sensor_spam` (
   PRIMARY KEY (`id`),
   KEY `sensor_id` (`sensor_id`),
   KEY `spam_id` (`spam_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=12 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -190,7 +190,7 @@ CREATE TABLE IF NOT EXISTS `spam` (
   `id` char(32) NOT NULL COMMENT 'Md5 of combination of fields',
   `from` varchar(200) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
   `subject` varchar(200) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
-  `to` text CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
+  `to` mediumtext CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
   `textMessage` mediumtext CHARACTER SET utf8 COLLATE utf8_unicode_ci COMMENT 'body of spam in text format',
   `htmlMessage` mediumtext CHARACTER SET utf8 COLLATE utf8_unicode_ci COMMENT 'body of spam in html format',
   `totalCounter` int(11) NOT NULL COMMENT 'total count of spam till date',
@@ -204,3 +204,17 @@ CREATE TABLE IF NOT EXISTS `spam` (
   KEY `textMessage` (`textMessage`(255)),
   KEY `htmlMessage` (`htmlMessage`(255))
 ) ENGINE=InnoDB DEFAULT COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `whitelist`
+--
+
+CREATE TABLE IF NOT EXISTS `whitelist` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `recipients` mediumtext CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;
+
+
