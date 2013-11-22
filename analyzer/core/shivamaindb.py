@@ -316,7 +316,7 @@ def update(tempid, mainid):
                 shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - update_date %s" % e)
      
     # spam table - update recipients and totalCounter
-    recipients = str(mailFields['to']).split(", ")
+    recipients = (mailFields['to'].encode('utf-8')).split(",")
     
     checkrecipientdb = "SELECT spam.to FROM spam WHERE spam.id = '" + str(mainid) + "'"
     mainDb.execute(checkrecipientdb)
