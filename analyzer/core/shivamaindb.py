@@ -17,8 +17,6 @@ def main():
     fetchfromtempdb = "SELECT `id`, `ssdeep`, `length` FROM `spam` WHERE 1"
     fetchfrommaindb = "SELECT `id`, `ssdeep`, `length` FROM `spam` WHERE 1"
     
-    notify = server.shivaconf.getboolean('notification', 'enabled')
-    
     try:
         tempDb.execute(fetchfromtempdb)
         mainDb.execute(fetchfrommaindb)
@@ -318,7 +316,17 @@ def update(tempid, mainid):
                 shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - update_date %s" % e)
      
     # spam table - update recipients and totalCounter
-    update_spam = "UPDATE `spam` SET spam.totalCounter = spam.totalCounter + '" + str(mailFields['count']) + "', spam.to = CONCAT(spam.to, ',', '" + str(mailFields['to']) + "') WHERE spam.id = '" + str(mainid) + "'"
+    recipients = str(mailFields['to']).split(", ")
+    
+    checkrecipientdb = "SELECT spam.to FROM spam WHERE spam.id = '" + str(mainid) + "'"
+    mainDb.execute(checkrecipientdb)
+    record = mainDb.fetchone()
+    recipientdb = (record[0].encode('utf-8')).split(",")
+    
+    newrecipients = [item for item in recipients if item not in recipientdb]
+    newrecipients = ''.join(newrecipients)
+    
+    update_spam = "UPDATE `spam` SET spam.totalCounter = spam.totalCounter + '" + str(mailFields['count']) + "', spam.to = CONCAT(spam.to, ',', '" + str(newrecipients) + "') WHERE spam.id = '" + str(mainid) + "'"
     
     try:
         mainDb.execute(update_spam)
@@ -418,7 +426,7 @@ def update(tempid, mainid):
                 if notify is True:
                     shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - insert_url %s" % e)
 
-    # Checking fo attachments
+    # Checking for attachments
     if len(mailFields['attachmentFileMd5']) != 0:
         i = 0
         while i < len(mailFields['attachmentFileMd5']):
@@ -446,7 +454,7 @@ def update(tempid, mainid):
                         shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - insert_attachment %s" % e)
             i = i + 1
     
-    # Checking fo inline attachments
+    # Checking for inline attachments
     if len(mailFields['inlineFileMd5']) >= 1:
         i = 0
         while i < len(mailFields['inlineFileMd5']):
@@ -506,5 +514,6 @@ def update(tempid, mainid):
 if __name__ == '__main__':
     tempDb = shivadbconfig.dbconnect()
     mainDb = shivadbconfig.dbconnectmain()
+    notify = server.shivaconf.getboolean('notification', 'enabled')
     time.sleep(200) # Giving time to hpfeeds module to complete the task.
     main()

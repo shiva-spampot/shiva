@@ -264,8 +264,8 @@ class QueueReceiver(object):
             record = mainDb.fetchone()
             global spammers_email
             
-            if record[0] != None:
-                spammers_email = (record[0].encode('utf-8')).split(",")
+            if record != None:
+                spammers_email = list(set((record[0].encode('utf-8')).split(",")))
             else:
                 spammers_email = []
             mainDb.close()
