@@ -321,11 +321,14 @@ def update(tempid, mainid):
     checkrecipientdb = "SELECT spam.to FROM spam WHERE spam.id = '" + str(mainid) + "'"
     mainDb.execute(checkrecipientdb)
     record = mainDb.fetchone()
-    recipientdb = (record[0].encode('utf-8')).split(",")
     
-    newrecipients = [item for item in recipients if item not in recipientdb]
-    newrecipients = ''.join(newrecipients)
-    
+    if record != None:
+      recipientdb = (record[0].encode('utf-8')).split(",")
+      newrecipients = [item for item in recipients if item not in recipientdb]
+      newrecipients = ''.join(newrecipients)
+    else:
+      newrecipients = mailFields['to']
+      
     update_spam = "UPDATE `spam` SET spam.totalCounter = spam.totalCounter + '" + str(mailFields['count']) + "', spam.to = CONCAT(spam.to, ',', '" + str(newrecipients) + "') WHERE spam.id = '" + str(mainid) + "'"
     
     try:
