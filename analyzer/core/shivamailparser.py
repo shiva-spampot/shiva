@@ -40,9 +40,12 @@ def md5checksum(filepath):
   
 def linkparser(input_body):
     """Returns a list containing URLs.
+    This code uses John Gruber's regex(http://daringfireball.net/2010/07/improved_regex_for_matching_urls) to find URLs in plain text.
+    Python implementation borrowed from https://gist.github.com/uogbuji/705383
     """
-    url_list = re.compile(r'http.?://[a-z,/,\.,\d,\?,=,\-,\+,#,_,&,;,\,,:,@,%,]*', re.IGNORECASE).findall(input_body)
-    url_list = list(set(url_list))
+    
+    URL_REGEX_PATTERN = re.compile(ur'(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:\'".,<>?\xab\xbb\u201c\u201d\u2018\u2019]))')
+    url_list = set([mgroups[0] for mgroups in URL_REGEX_PATTERN.findall(input_body)])
     return url_list
 
 def getfuzzyhash():
