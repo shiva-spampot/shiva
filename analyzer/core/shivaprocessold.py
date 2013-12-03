@@ -50,6 +50,7 @@ def main(mailFields, matchedHash, key, msgMailRequest):
                 record['to'] = record['to'] + "," + mailFields['to']
 
             record['counter'] += 1
+            logging.info("value of record counter has reached: %s" % record['counter'])
             
             if relay_enabled is True:
                 relaycounter = server.shivaconf.getint('analyzer', 'globalcounter')
@@ -58,6 +59,8 @@ def main(mailFields, matchedHash, key, msgMailRequest):
                 # Following two lines are for debuggin, delete them later
                 value = mailFields['to'] in server.spammers_email
                 logging.info("\n[+]Spammers whitelist email-id found %s" % value)
+                logging.info("type: %s and its value: %s" % (type(mailFields['to']), mailFields['to']))
+                logging.info("type: %s list: %s" % (type(server.spammers_email),server.spammers_email))
                 
                 if (int(server.QueueReceiver.totalRelay) < relaycounter and int(record['relayed']) < individualcounter) | (mailFields['to'] in server.spammers_email):
                     logging.info("[+]shivaprocessold Module: Relay counter has not reached limit yet. Shall relay this.")

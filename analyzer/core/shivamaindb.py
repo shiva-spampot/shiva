@@ -17,6 +17,8 @@ def main():
     fetchfromtempdb = "SELECT `id`, `ssdeep`, `length` FROM `spam` WHERE 1"
     fetchfrommaindb = "SELECT `id`, `ssdeep`, `length` FROM `spam` WHERE 1"
     
+    
+    
     try:
         tempDb.execute(fetchfromtempdb)
         mainDb.execute(fetchfrommaindb)
@@ -314,8 +316,11 @@ def update(tempid, mainid):
             print e
             if notify is True:
                 shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - update_date %s" % e)
-     
-    # spam table - update recipients and totalCounter
+    
+    
+       
+    # Checking for Recipients
+    #recipients = str(mailFields['to']).split(", ")
     recipients = (mailFields['to'].encode('utf-8')).split(",")
     
     checkrecipientdb = "SELECT spam.to FROM spam WHERE spam.id = '" + str(mainid) + "'"
@@ -323,13 +328,28 @@ def update(tempid, mainid):
     record = mainDb.fetchone()
     
     if record != None:
-      recipientdb = (record[0].encode('utf-8')).split(",")
-      newrecipients = [item for item in recipients if item not in recipientdb]
-      newrecipients = ''.join(newrecipients)
+        print "inside comparing lists: "
+        recipientsdb = (record[0].encode('utf-8')).split(",")
+        newrecipients = [item for item in recipients if item not in recipientsdb]
+        if newrecipients != '':
+            newrecipients = ''.join(newrecipients)
     else:
-      newrecipients = mailFields['to']
-      
-    update_spam = "UPDATE `spam` SET spam.totalCounter = spam.totalCounter + '" + str(mailFields['count']) + "', spam.to = CONCAT(spam.to, ',', '" + str(newrecipients) + "') WHERE spam.id = '" + str(mainid) + "'"
+        print "no data for it in db"
+        newrecipients = mailFields['to']
+    
+    print "initial recipients: %s, type: %s" % (recipients, type(recipients))
+    print "recipientsdb: %s, type: %s" % (recipientsdb, type(recipientsdb))    
+    print "newrecipients: ", newrecipients
+    print "type: ", type(newrecipients)
+    print "mailFields[to]: ", mailFields['to']
+    print "tyoe of mailfiled value: ", type(mailFields['to'])
+    
+    
+    # spam table - update recipients and totalCounter
+    if newrecipients == '':
+        update_spam = "UPDATE `spam` SET spam.totalCounter = spam.totalCounter + '" + str(mailFields['count']) + "' WHERE spam.id = '" + str(mainid) + "'"
+    else:
+        update_spam = "UPDATE `spam` SET spam.totalCounter = spam.totalCounter + '" + str(mailFields['count']) + "', spam.to = CONCAT(spam.to, ',', '" + str(newrecipients) + "') WHERE spam.id = '" + str(mainid) + "'"
     
     try:
         mainDb.execute(update_spam)
@@ -369,7 +389,9 @@ def update(tempid, mainid):
             except mdb.Error, e:
                 print e
                 if notify is True:
-                    shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - insert_ip_spam %s" % e)            
+                    shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - insert_ip_spam %s" % e)   
+    
+                  
             
     # Checking for Sensor ID
     sensor_list = str(mailFields['sensorID']).split(", ")
@@ -429,7 +451,7 @@ def update(tempid, mainid):
                 if notify is True:
                     shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - insert_url %s" % e)
 
-    # Checking for attachments
+    # Checking fo attachments
     if len(mailFields['attachmentFileMd5']) != 0:
         i = 0
         while i < len(mailFields['attachmentFileMd5']):
@@ -457,7 +479,7 @@ def update(tempid, mainid):
                         shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - insert_attachment %s" % e)
             i = i + 1
     
-    # Checking for inline attachments
+    # Checking fo inline attachments
     if len(mailFields['inlineFileMd5']) >= 1:
         i = 0
         while i < len(mailFields['inlineFileMd5']):

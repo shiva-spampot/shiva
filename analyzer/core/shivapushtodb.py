@@ -175,7 +175,8 @@ def getspammeremails():
         mainDb.execute(whitelist)
         record = mainDb.fetchone()
         if record != None:
-            server.spammers_email = list(set((record[0].encode('utf-8')).split(",")))
+            server.spammers_email = (record[0].encode('utf-8')).split(",")
+            server.spammers_email = list(set(server.spammers_email))
         mainDb.close()
     except mdb.Error, e:
         logging.critical("[-] Error (Module shivapushtodb.py) - some issue obtaining whitelist: %s" % e)
@@ -185,7 +186,9 @@ def getspammeremails():
     for record in server.QueueReceiver.deep_records:
         try:
             if record['counter'] < 30:
-                server.spammers_email.extend(record['to'].split(", "))
+                logging.info("type: %s, record to values: %s" % (type(record['to']), record['to']))
+                server.spammers_email.extend(record['to'].split(","))
+                server.spammers_email = list(set(server.spammers_email))
         except Exception, e:
             if notify is True:
                 shivanotifyerrors.notifydeveloper("[-] Error (Module shivapushtodb.py) - extending whitelist %s" % e)
