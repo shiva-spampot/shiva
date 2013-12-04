@@ -331,8 +331,9 @@ def update(tempid, mainid):
         print "inside comparing lists: "
         recipientsdb = (record[0].encode('utf-8')).split(",")
         newrecipients = [item for item in recipients if item not in recipientsdb]
+        
         if newrecipients != '':
-            newrecipients = ''.join(newrecipients)
+            newrecipients = ','.join(newrecipients)
     else:
         print "no data for it in db"
         newrecipients = mailFields['to']
