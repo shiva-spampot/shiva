@@ -57,14 +57,14 @@ def getfuzzyhash():
     of small spams. If spam's body is very less or non existent, we add our randomText to body.
     """
     if mailFields['html']:
-        if len(mailFields['html']) < 60:
+        if len(mailFields['html']) < 150:
             data = mailFields['html'] + " " + mailFields['subject'] + randomText
         else:
             data = mailFields['html'] + " " + mailFields['subject']
         mailFields['len'] = len(mailFields['html'])
     
     else:
-        if len(mailFields['text']) < 60:
+        if len(mailFields['text']) < 150:
             data = mailFields['text'] + " " + mailFields['subject'] + randomText
         else:
             data = mailFields['text'] + " " + mailFields['subject']
