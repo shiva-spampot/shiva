@@ -3,6 +3,7 @@ About SHIVA
 SHIVA: Spam Honeypot with Intelligent Virtual Analyzer, is an open but controlled relay Spam Honeypot (SpamPot), built on top of Lamson Python framework, with capability of collecting and analyzing all spam thrown at it. Analysis of data captured can be used to get information of phishing attacks, scamming campaigns, malware campaigns, spam botnets, etc. SHIVA is written in Python and currently uses MySQL as its back-end.
 SHIVA is released under GNU GPL v3.
 
+Note: For time being, please clone from 'development' branch which is couple of commits ahead of 'master' branch.
 
 Documentation
 -------------
