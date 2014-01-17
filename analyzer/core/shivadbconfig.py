@@ -32,7 +32,7 @@ def dbconnect():
         conn = mdb.connect (host = HOST,
                             user = USER,
                             passwd = PASS,
-                            db = "Temp",
+                            db = "ShivaTemp",
                             charset='utf8mb4',
                             use_unicode = True)
         conn.autocommit(True)
