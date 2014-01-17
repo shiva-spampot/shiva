@@ -179,7 +179,7 @@ def getspammeremails():
             
            
         else:
-            server.whitelist_ids['spammers_email'] = (record[0].encode('utf-8')).split(",")[-50:]
+            server.whitelist_ids['spammers_email'] = (record[0].encode('utf-8')).split(",")[-100:]
             server.whitelist_ids['spammers_email'] = list(set(server.whitelist_ids['spammers_email']))
             
                 

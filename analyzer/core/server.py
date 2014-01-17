@@ -271,7 +271,7 @@ class QueueReceiver(object):
             if ((record is None) or (record[0] is None)):
                 whitelist_ids['spammers_email'] = []
             else:
-                whitelist_ids['spammers_email'] = (record[0].encode('utf-8')).split(",")[-50:]
+                whitelist_ids['spammers_email'] = (record[0].encode('utf-8')).split(",")[-100:]
                 whitelist_ids['spammers_email'] = list(set(whitelist_ids['spammers_email']))
                 
                 logging.info("[+] server Module: whitelist recipients:")
