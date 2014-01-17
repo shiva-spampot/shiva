@@ -53,7 +53,10 @@ def main():
             
     # At last update whitelist recipients
     group_concat_max_len = "SET SESSION group_concat_max_len = 20000"
-    whitelist = "INSERT INTO `whitelist` (`id`, `recipients`) VALUES ('1', (SELECT GROUP_CONCAT(DISTINCT `to`) FROM `spam` WHERE `totalCounter` < 30)) ON DUPLICATE KEY UPDATE `recipients` = (SELECT GROUP_CONCAT(DISTINCT `to`) FROM `spam` WHERE `totalCounter` < 30)"
+    #whitelist = "INSERT INTO `whitelist` (`id`, `recipients`) VALUES ('1', (SELECT GROUP_CONCAT(DISTINCT `to`) FROM `spam` WHERE `totalCounter` < 30)) ON DUPLICATE KEY UPDATE `recipients` = (SELECT GROUP_CONCAT(DISTINCT `to`) FROM `spam` WHERE `totalCounter` < 30)"
+    
+    
+    whitelist = "INSERT INTO `whitelist` (`id`, `recipients`) VALUES ('1', (SELECT GROUP_CONCAT(`to`) FROM `spam` RIGHT JOIN `sdate_spam` INNER JOIN `sdate` ON (sdate.id = sdate_spam.date_id) ON (spam.id = sdate_spam.spam_id) WHERE spam.id IN (SELECT id FROM `spam` WHERE totalCounter < 100))) ON DUPLICATE KEY UPDATE `recipients` = (SELECT GROUP_CONCAT(`to`) FROM `spam` RIGHT JOIN `sdate_spam` INNER JOIN `sdate` ON (sdate.id = sdate_spam.date_id) ON (spam.id = sdate_spam.spam_id) WHERE spam.id IN (SELECT id FROM `spam` WHERE totalCounter < 100))"
   
     try:
         mainDb.execute(group_concat_max_len)
@@ -337,14 +340,7 @@ def update(tempid, mainid):
     else:
         print "no data for it in db"
         newrecipients = mailFields['to']
-    
-    print "initial recipients: %s, type: %s" % (recipients, type(recipients))
-    print "recipientsdb: %s, type: %s" % (recipientsdb, type(recipientsdb))    
-    print "newrecipients: ", newrecipients
-    print "type: ", type(newrecipients)
-    print "mailFields[to]: ", mailFields['to']
-    print "tyoe of mailfiled value: ", type(mailFields['to'])
-    
+      
     
     # spam table - update recipients and totalCounter
     if newrecipients == '':
