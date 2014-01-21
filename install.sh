@@ -212,7 +212,7 @@ installation () {
 }
 
 banner
-printf "If anything goes wrong, delete newly created directory 'shiva' and start again"
+printf "If anything goes wrong, delete newly created directory 'shiva' and start again\n"
 read -p "Press enter to continue installation...";
 if [ "$UID" == "0" ] || [ "$EUID" == "0" ]
 then
