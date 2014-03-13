@@ -55,20 +55,26 @@ def getfuzzyhash():
     Hash is generated using the combination of mail's body + subject.
     Msg length is being checked because SSDEEP has some issues with comparing hashes
     of small spams. If spam's body is very less or non existent, we add our randomText to body.
+    There would be certain cases when there wouldn't be any html or text portion i.e. email body would be empty. Hence forth len = html/text + subject
+    In shivamaindb.py if len < 10 then keeping comparision ratio higher
     """
     if mailFields['html']:
         if len(mailFields['html']) < 150:
             data = mailFields['html'] + " " + mailFields['subject'] + randomText
         else:
             data = mailFields['html'] + " " + mailFields['subject']
-        mailFields['len'] = len(mailFields['html'])
+        mailFields['len'] = len(mailFields['html']) + len(mailFields['subject'])
     
-    else:
+    elif mailFields['text']:
         if len(mailFields['text']) < 150:
             data = mailFields['text'] + " " + mailFields['subject'] + randomText
         else:
             data = mailFields['text'] + " " + mailFields['subject']
-        mailFields['len'] = len(mailFields['text'])
+        mailFields['len'] = len(mailFields['text']) + len(mailFields['subject'])
+    else:
+        # Test mails without body and limited chars in subject
+        data = mailFields['subject'] + mailFields['from'] + randomText
+        mailFields['len'] = len(mailFields['subject'])
     
     return ssdeep.hash(data)
 
@@ -154,7 +160,7 @@ def writepartsrecurse(msg):
 def main(key, msgMailRequest):
     """This function gets called from server.py module
     """
-    logging.critical("inside mailparser module")
+    #logging.critical("inside mailparser module")
     global mailFields
     queuepath = server.shivaconf.get('global', 'queuepath')
     
