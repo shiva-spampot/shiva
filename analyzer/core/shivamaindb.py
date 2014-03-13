@@ -41,7 +41,8 @@ def main():
                 
                 else:
                     ratio = ssdeep.compare(t_record[1], m_record[1])
-                    if ratio >= 80:
+                    # Increase the comparison ratio when length is smaller
+                    if (int(t_record[2]) <= 150 and ratio >= 95) or (int(t_record[2]) > 150 and ratio >= 80):
                         update(t_record[0], m_record[0])
                     else:
                         count += 1
