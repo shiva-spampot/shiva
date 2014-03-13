@@ -191,7 +191,7 @@ CREATE TABLE IF NOT EXISTS `spam` (
   `id` char(32) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Md5 of combination of fields',
   `from` varchar(200) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
   `subject` varchar(200) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
-  `to` text CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
+  `to` longtext CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
   `textMessage` mediumtext CHARACTER SET utf8 COLLATE utf8_unicode_ci COMMENT 'body of spam in text format',
   `htmlMessage` mediumtext CHARACTER SET utf8 COLLATE utf8_unicode_ci COMMENT 'body of spam in html format',
   `totalCounter` int(11) NOT NULL COMMENT 'total count of spam till date',
