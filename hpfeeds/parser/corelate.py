@@ -42,6 +42,7 @@ def queuereceiver():
                 os.remove(path + spam_file)
         else:
             print "wake me up when something comes.....sleeping at %s" % datetime.datetime.now()
+            time.sleep(600)
                         
 def conclude(record):
     fetchfromdb = "SELECT `id`, `ssdeep`, `length` FROM `spam` WHERE 1"
@@ -63,7 +64,8 @@ def conclude(record):
             
             else:
                 ratio = ssdeep.compare(record['ssdeep'], d_record[1])
-                if ratio >= 85:
+                #if ratio >= 85:
+                if (int(record['len']) <= 150 and ratio >=95) or (int(record['len']) > 150 and ratio >= 80):
                     update(record, d_record[0])
                 else:
                     count += 1
