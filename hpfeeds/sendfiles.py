@@ -40,7 +40,7 @@ def send_raw():
             with open(path['raw_spam']+f) as fp:
                 spamfile = fp.read()
             
-            d = {'id': spam_id, 'spamfile': spamfile, 'ip': ip, 'name': f}
+            d = {'s_id': spam_id, 'spamfile': spamfile, 'ip': ip, 'name': f}
             data = json.dumps(d)
             with lock:
                 hpc.publish(channels['raw_spam'], data)
@@ -63,7 +63,7 @@ def send_attach():
             with open(path['attach']+f) as fp:
                 attachment = base64.b64encode(fp.read())
             
-            d = {'id': spam_id, 'attachment': attachment, 'name': name}
+            d = {'s_id': spam_id, 'attachment': attachment, 'name': name}            
             data = json.dumps(d)
             with lock:
                 hpc.publish(channels['attachments'], data)
@@ -81,7 +81,10 @@ def main():
         print "[-] shivasendfiles main: Error. %s" % e
         sys.exit(1)
     
-    while raw_thread.isAlive() or attach_thread.isAlive():
+    try:
+        while raw_thread.isAlive() or attach_thread.isAlive():
+            pass
+    except Exception, e:
         pass
 
 if __name__ == '__main__':
