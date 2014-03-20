@@ -55,7 +55,7 @@ def push():
                 attachFile = open(path, 'wb')
                 attachFile.write(record['attachmentFile'][i])
                 attachFile.close()
-                record['attachmentFile'][i] = path
+                #record['attachmentFile'][i] = path
                 insertAttachment = "INSERT INTO `attachments`(`spam_id`, `file_name`, `attach_type`, `attachmentFileMd5`, `date`, `attachment_file_path`) VALUES ('" + str(record['s_id']) + "', '" + str(mdb.escape_string(record['attachmentFileName'][i])) + "', '" + 'attach' + "', '" + str(record['attachmentFileMd5'][i]) + "', '" + str(record['date']) + "', '" + str(mdb.escape_string(path)) +"')"
               
                 try:
