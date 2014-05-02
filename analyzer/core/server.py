@@ -34,7 +34,9 @@ confpath = os.path.dirname(os.path.realpath(__file__)) + "/../../../../../shiva.
 shivaconf = ConfigParser.ConfigParser()
 shivaconf.read(confpath)
 
-spammers_email = []     # Global whitlist of spammers own email-ids
+# Global dictionary to store whitelist email ids
+whitelist_ids = {'spammers_email':[]}
+
 
 def undeliverable_message(raw_message, failure_type):
     """
@@ -262,12 +264,19 @@ class QueueReceiver(object):
         try:
             mainDb.execute(whitelist)
             record = mainDb.fetchone()
-            global spammers_email
+
+            global whitelist_ids
             
-            if record != None:
-                spammers_email = list(set((record[0].encode('utf-8')).split(",")))
+                  
+            if ((record is None) or (record[0] is None)):
+                whitelist_ids['spammers_email'] = []
             else:
-                spammers_email = []
+                whitelist_ids['spammers_email'] = (record[0].encode('utf-8')).split(",")[-100:]
+                whitelist_ids['spammers_email'] = list(set(whitelist_ids['spammers_email']))
+                
+                logging.info("[+] server Module: whitelist recipients:")
+                for key, value in whitelist_ids.items():
+                    logging.info("key: %s, value: %s" % (key, value))
             mainDb.close()
         except mdb.Error, e:
             logging.critical("[-] Error (Module server.py) - some issue obtaining whitelist: %s" % e)

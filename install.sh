@@ -39,7 +39,7 @@ INSTALL_PATH=$WORK_PATH/shiva
 
 prerequisites () {
     printf "\n\n[*] Checking for the prerequisites in system.\n"
-    pkgs=("python" "g++" "python-dev" "python-virtualenv" "exim4-daemon-light" "libmysqlclient-dev")
+    pkgs=("python" "g++" "python-dev" "python-virtualenv" "exim4-daemon-light" "libmysqlclient-dev" "make")
     
     missing_counter=0
     for needed_pkg in "${pkgs[@]}"
@@ -54,6 +54,7 @@ prerequisites () {
        
     if ((missing_counter > 0)); then
       printf "\n[\n\e[1;31m[!] Error!\e[0m Minimum %d package(s) missing. Install required package(s) (refer to User Manual) and re-run this script.....aborting installation\n\n" "$missing_counter"
+      printf "sudo apt-get install <missing_pkg_1> <missing_pkg_2> and likewise"
       exit 1
     fi
 }
@@ -211,6 +212,7 @@ installation () {
 }
 
 banner
+printf "If anything goes wrong, delete newly created directory 'shiva' and start again\n"
 read -p "Press enter to continue installation...";
 if [ "$UID" == "0" ] || [ "$EUID" == "0" ]
 then
