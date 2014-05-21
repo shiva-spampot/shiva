@@ -37,10 +37,11 @@ def push():
     for record in server.QueueReceiver.deep_records:
         logging.info("Records are %d" % len(server.QueueReceiver.deep_records))
 
-        insertSpam = "INSERT INTO `spam`(`id`, `ssdeep`, `to`, `from`, `textMessage`, `htmlMessage`, `subject`, `headers`, `sourceIP`, `sensorID`, `firstSeen`, `relayCounter`, `totalCounter`, `length`, `relayTime`) VALUES ('" + str(record['s_id']) + "', '" + str(record['ssdeep']) + "', '" + str(record['to']) + "', '" + str(record['from']) + "', '" + str(record['text']) + "', '" + str(record['html']) + "', '" + str(record['subject']) + "', '" + str(record['headers']) + "', '" + str(record['sourceIP']) + "', '" + str(record['sensorID']) + "', '" + str(record['firstSeen']) + "', '" + str(record['relayed']) + "', '" + str(record['counter']) + "', '" + str(record['len']) + "', '" + str(record['firstRelayed'])  + "')"
+        values = str(record['s_id']), str(record['ssdeep']), str(record['to']), str(record['from']), str(record['text']), str(record['html']), str(record['subject']), str(record['headers']), str(record['sourceIP']), str(record['sensorID']), str(record['firstSeen']), str(record['relayed']), str(record['counter']), str(record['len']), str(record['firstRelayed'])
+        insertSpam = "INSERT INTO `spam`(`id`, `ssdeep`, `to`, `from`, `textMessage`, `htmlMessage`, `subject`, `headers`, `sourceIP`, `sensorID`, `firstSeen`, `relayCounter`, `totalCounter`, `length`, `relayTime`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
 
         try:
-            exeSql.execute(insertSpam)
+            exeSql.execute(insertSpam, values)
         except mdb.Error, e:
             logging.critical("[-] Error (shivapushtodb insert_spam) - %d: %s" % (e.args[0], e.args[1]))
             if notify is True:
@@ -56,10 +57,11 @@ def push():
                 attachFile.write(record['attachmentFile'][i])
                 attachFile.close()
                 #record['attachmentFile'][i] = path
-                insertAttachment = "INSERT INTO `attachments`(`spam_id`, `file_name`, `attach_type`, `attachmentFileMd5`, `date`, `attachment_file_path`) VALUES ('" + str(record['s_id']) + "', '" + str(mdb.escape_string(record['attachmentFileName'][i])) + "', '" + 'attach' + "', '" + str(record['attachmentFileMd5'][i]) + "', '" + str(record['date']) + "', '" + str(mdb.escape_string(path)) +"')"
+                values = str(record['s_id']), str(mdb.escape_string(record['attachmentFileName'][i])), 'attach', str(record['attachmentFileMd5'][i]), str(record['date']), str(mdb.escape_string(path))
+                insertAttachment = "INSERT INTO `attachments`(`spam_id`, `file_name`, `attach_type`, `attachmentFileMd5`, `date`, `attachment_file_path`) VALUES (%s, %s, %s, %s, %s, %s)"
               
                 try:
-                    exeSql.execute(insertAttachment)
+                    exeSql.execute(insertAttachment, values)
                     i += 1
 
                 except mdb.Error, e:
@@ -76,10 +78,11 @@ def push():
                 attachFile = open(path, 'wb')
                 attachFile.write(record['inlineFile'][i])
                 attachFile.close()
-                insertInline = "INSERT INTO `attachments`(`spam_id`, `file_name`, `attach_type`, `attachmentFileMd5`, `date`, `attachment_file_path`) VALUES ('" + str(record['s_id']) + "', '" + str(mdb.escape_string(record['inlineFileName'][i])) + "', '" + 'inline' + "', '" + str(record['inlineFileMd5'][i]) + "', '" + str(record['date']) + "', '" + str(mdb.escape_string(path)) + "')"
+                values = str(record['s_id']), str(mdb.escape_string(record['inlineFileName'][i])), 'inline', str(record['inlineFileMd5'][i]), str(record['date']), str(mdb.escape_string(path))
+                insertInline = "INSERT INTO `attachments`(`spam_id`, `file_name`, `attach_type`, `attachmentFileMd5`, `date`, `attachment_file_path`) VALUES (%s, %s, %s, %s, %s, %s)"
 
                 try:
-                    exeSql.execute(insertInline)
+                    exeSql.execute(insertInline, values)
                     i += 1
                 except mdb.Error, e:
                     logging.critical("[-] Error (shivapushtodb insert_inline) - %d: %s" % (e.args[0], e.args[1]))
@@ -90,10 +93,11 @@ def push():
         if len(record['links']) > 0:
             i = 0
             for link in record['links']:
-                insertLink = "INSERT INTO `links` (`spam_id`, `hyperlink`, `date`) VALUES ('" + str(record['s_id']) + "', '" + str(link) + "', '" + str(record['date']) + "')"
+                values =  str(record['s_id']), str(link), str(record['date'])
+                insertLink = "INSERT INTO `links` (`spam_id`, `hyperlink`, `date`) VALUES (%s, %s, %s)"
 
                 try:
-                    exeSql.execute(insertLink)
+                    exeSql.execute(insertLink, values)
                     i += 1
                 except mdb.Error, e:
                     logging.critical("[-] Error (shivapushtodb insert_link) - %d: %s" % (e.args[0], e.args[1]))
@@ -102,10 +106,11 @@ def push():
 
 
         # Extracting and saving name of the sensor
-        insertSensor = "INSERT INTO `sensors` (`spam_id`, `sensorID`, `date`) VALUES ('" + str(record['s_id']) + "', '" + str(record['sensorID']) + "', '" + str(record['date']) + "')"
+        values = str(record['s_id']), str(record['sensorID']), str(record['date'])
+        insertSensor = "INSERT INTO `sensors` (`spam_id`, `sensorID`, `date`) VALUES (%s, %s, %s)"
 
         try:
-            exeSql.execute(insertSensor)
+            exeSql.execute(insertSensor, values)
         except mdb.Error, e:
             logging.critical("[-] Error (shivapushtodb insert_sensor - %d: %s" % (e.args[0], e.args[1]))
             if notify is True:
