@@ -42,6 +42,7 @@ def queuereceiver():
                 
                 with open(path + spam_file, "rb") as fp:
                     record = cPickle.load(fp)
+                
                 conclude(record)
                 os.remove(path + spam_file)
         else:
