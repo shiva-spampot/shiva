@@ -55,7 +55,7 @@ def push():
                 attachFile = open(path, 'wb')
                 attachFile.write(record['attachmentFile'][i])
                 attachFile.close()
-                record['attachmentFile'][i] = path
+                #record['attachmentFile'][i] = path
                 insertAttachment = "INSERT INTO `attachments`(`spam_id`, `file_name`, `attach_type`, `attachmentFileMd5`, `date`, `attachment_file_path`) VALUES ('" + str(record['s_id']) + "', '" + str(mdb.escape_string(record['attachmentFileName'][i])) + "', '" + 'attach' + "', '" + str(record['attachmentFileMd5'][i]) + "', '" + str(record['date']) + "', '" + str(mdb.escape_string(path)) +"')"
               
                 try:
@@ -174,18 +174,40 @@ def getspammeremails():
     try:
         mainDb.execute(whitelist)
         record = mainDb.fetchone()
-        if record[0] != None:
-            server.spammers_email = (record[0].encode('utf-8')).split(",")
+        if ((record is None) or (record[0] is None)):
+            server.whitelist_ids['spammers_email'] = []
+            
+           
+        else:
+            server.whitelist_ids['spammers_email'] = (record[0].encode('utf-8')).split(",")[-100:]
+            server.whitelist_ids['spammers_email'] = list(set(server.whitelist_ids['spammers_email']))
+            
+                
+        logging.info("[+] Pushtodb Module: whitelist recipients:")
+        for key, value in server.whitelist_ids.items():
+            logging.info("key: %s, value: %s" % (key, value))
+            
         mainDb.close()
+        
     except mdb.Error, e:
         logging.critical("[-] Error (Module shivapushtodb.py) - some issue obtaining whitelist: %s" % e)
         if notify is True:
             shivanotifyerrors.notifydeveloper("[-] Error (Module shivapushtodb.py) - getspammeremails %s" % e)
-        
+                
     for record in server.QueueReceiver.deep_records:
         try:
             if record['counter'] < 30:
-                server.spammers_email.extend(record['to'].split(", "))
+                logging.info("type: %s, record to values: %s" % (type(record['to']), record['to']))
+                #server.spammers_email.extend(record['to'].split(","))
+                #server.spammers_email = list(set(server.spammers_email))
+                
+                #server.whitelist_ids[record['s_id']].append(record['to'].split(","))
+                server.whitelist_ids[record['s_id']] = record['to'].split(",")
+
+                
+                for key, value in server.whitelist_ids.items():
+                    logging.info("New record - key: %s, value: %s" % (key, value))
+                                
         except Exception, e:
             if notify is True:
                 shivanotifyerrors.notifydeveloper("[-] Error (Module shivapushtodb.py) - extending whitelist %s" % e)

@@ -574,12 +574,15 @@ class MailmanProxy(PureProxy):
 
 class CredentialValidator(object):  
     def __init__(self, username=None, password=None):
-        self.username = username
-        self.password = password
+        self.username = username.split(",")
+        self.password = password.split(",")
 
     def validate(self, username, password):
-        if username == self.username and password == self.password:
-            return True
+        i = 0
+        while i < len(password):
+            if (username == self.username[i]) and (password == self.password[i]):
+                return True
+            i += 1
         return False
         
         

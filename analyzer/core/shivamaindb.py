@@ -17,7 +17,7 @@ def main():
     fetchfromtempdb = "SELECT `id`, `ssdeep`, `length` FROM `spam` WHERE 1"
     fetchfrommaindb = "SELECT `id`, `ssdeep`, `length` FROM `spam` WHERE 1"
     
-    notify = server.shivaconf.getboolean('notification', 'enabled')
+    
     
     try:
         tempDb.execute(fetchfromtempdb)
@@ -41,7 +41,8 @@ def main():
                 
                 else:
                     ratio = ssdeep.compare(t_record[1], m_record[1])
-                    if ratio >= 80:
+                    # Increase the comparison ratio when length is smaller
+                    if (int(t_record[2]) <= 150 and ratio >= 95) or (int(t_record[2]) > 150 and ratio >= 80):
                         update(t_record[0], m_record[0])
                     else:
                         count += 1
@@ -53,7 +54,10 @@ def main():
             
     # At last update whitelist recipients
     group_concat_max_len = "SET SESSION group_concat_max_len = 20000"
-    whitelist = "INSERT INTO `whitelist` (`id`, `recipients`) VALUES ('1', (SELECT GROUP_CONCAT(DISTINCT `to`) FROM `spam` WHERE `totalCounter` < 30)) ON DUPLICATE KEY UPDATE `recipients` = (SELECT GROUP_CONCAT(DISTINCT `to`) FROM `spam` WHERE `totalCounter` < 30)"
+    #whitelist = "INSERT INTO `whitelist` (`id`, `recipients`) VALUES ('1', (SELECT GROUP_CONCAT(DISTINCT `to`) FROM `spam` WHERE `totalCounter` < 30)) ON DUPLICATE KEY UPDATE `recipients` = (SELECT GROUP_CONCAT(DISTINCT `to`) FROM `spam` WHERE `totalCounter` < 30)"
+    
+    
+    whitelist = "INSERT INTO `whitelist` (`id`, `recipients`) VALUES ('1', (SELECT GROUP_CONCAT(`to`) FROM `spam` RIGHT JOIN `sdate_spam` INNER JOIN `sdate` ON (sdate.id = sdate_spam.date_id) ON (spam.id = sdate_spam.spam_id) WHERE spam.id IN (SELECT id FROM `spam` WHERE totalCounter < 100))) ON DUPLICATE KEY UPDATE `recipients` = (SELECT GROUP_CONCAT(`to`) FROM `spam` RIGHT JOIN `sdate_spam` INNER JOIN `sdate` ON (sdate.id = sdate_spam.date_id) ON (spam.id = sdate_spam.spam_id) WHERE spam.id IN (SELECT id FROM `spam` WHERE totalCounter < 100))"
   
     try:
         mainDb.execute(group_concat_max_len)
@@ -316,9 +320,34 @@ def update(tempid, mainid):
             print e
             if notify is True:
                 shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - update_date %s" % e)
-     
+    
+    
+       
+    # Checking for Recipients
+    #recipients = str(mailFields['to']).split(", ")
+    recipients = (mailFields['to'].encode('utf-8')).split(",")
+    
+    checkrecipientdb = "SELECT spam.to FROM spam WHERE spam.id = '" + str(mainid) + "'"
+    mainDb.execute(checkrecipientdb)
+    record = mainDb.fetchone()
+    
+    if record != None:
+        print "inside comparing lists: "
+        recipientsdb = (record[0].encode('utf-8')).split(",")
+        newrecipients = [item for item in recipients if item not in recipientsdb]
+        
+        if newrecipients != '':
+            newrecipients = ','.join(newrecipients)
+    else:
+        print "no data for it in db"
+        newrecipients = mailFields['to']
+      
+    
     # spam table - update recipients and totalCounter
-    update_spam = "UPDATE `spam` SET spam.totalCounter = spam.totalCounter + '" + str(mailFields['count']) + "', spam.to = CONCAT(spam.to, ',', '" + str(mailFields['to']) + "') WHERE spam.id = '" + str(mainid) + "'"
+    if newrecipients == '':
+        update_spam = "UPDATE `spam` SET spam.totalCounter = spam.totalCounter + '" + str(mailFields['count']) + "' WHERE spam.id = '" + str(mainid) + "'"
+    else:
+        update_spam = "UPDATE `spam` SET spam.totalCounter = spam.totalCounter + '" + str(mailFields['count']) + "', spam.to = CONCAT(spam.to, ',', '" + str(newrecipients) + "') WHERE spam.id = '" + str(mainid) + "'"
     
     try:
         mainDb.execute(update_spam)
@@ -358,7 +387,9 @@ def update(tempid, mainid):
             except mdb.Error, e:
                 print e
                 if notify is True:
-                    shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - insert_ip_spam %s" % e)            
+                    shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - insert_ip_spam %s" % e)   
+    
+                  
             
     # Checking for Sensor ID
     sensor_list = str(mailFields['sensorID']).split(", ")
@@ -506,5 +537,6 @@ def update(tempid, mainid):
 if __name__ == '__main__':
     tempDb = shivadbconfig.dbconnect()
     mainDb = shivadbconfig.dbconnectmain()
+    notify = server.shivaconf.getboolean('notification', 'enabled')
     time.sleep(200) # Giving time to hpfeeds module to complete the task.
     main()

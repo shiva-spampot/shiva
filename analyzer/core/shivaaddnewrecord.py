@@ -57,8 +57,11 @@ def main(mailFields, key, msgMailRequest):
     if relay_enabled is True:
         relaycounter = server.shivaconf.getint('analyzer', 'globalcounter')
 
-        if (int(server.QueueReceiver.totalRelay) < relaycounter) | (mailFields['to'] in server.spammers_email):
-            logging.info("[+]shivaaddnewrecord Module: Relay counter has not reached limit yet. Shall relay this.")
+        if (int(server.QueueReceiver.totalRelay) > relaycounter):
+            logging.info("[+]shivaaddnewrecord Module: Limit reached. No relay.")
+            
+        elif next((i for i, sublist in enumerate([myval for myval in server.whitelist_ids.values()]) if mailFields['to'] in sublist), -1) > -1:
+            logging.info("[+]shivaaddnewrecord Module: Recipient found in white list - relaying")
             
 	    # Following 3 lines does the relaying
 	    queuePath = server.shivaconf.get('global', 'queuepath')
@@ -68,7 +71,21 @@ def main(mailFields, key, msgMailRequest):
             newRecord['relayed'] += 1
             server.QueueReceiver.totalRelay += 1
         else:
-           logging.info("[+]shivaaddnewrecord Module: Limit reached. No relay.")
+            logging.info("[+]shivaaddnewrecord Module: Adding recipient to whitelist and relaying")
+                            
+            server.whitelist_ids[mailFields['s_id']] = mailFields['to'].split()
+       
+            for key, value in server.whitelist_ids.items():
+                logging.info("key: %s, value: %s" % (key, value))
+            
+            # Following 3 lines does the relaying
+            queuePath = server.shivaconf.get('global', 'queuepath')
+            processMessage = server.QueueReceiver(queuePath)
+            processMessage.process_message(msgMailRequest)
+
+            newRecord['relayed'] += 1
+            server.QueueReceiver.totalRelay += 1
+           
             
     records.insert(0, newRecord) #Inserting new record at the first position.
     del newRecord

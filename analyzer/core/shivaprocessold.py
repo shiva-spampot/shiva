@@ -50,17 +50,17 @@ def main(mailFields, matchedHash, key, msgMailRequest):
                 record['to'] = record['to'] + "," + mailFields['to']
 
             record['counter'] += 1
+            logging.info("value of record counter has reached: %s" % record['counter'])
             
             if relay_enabled is True:
-                relaycounter = server.shivaconf.getint('analyzer', 'globalcounter')
-                individualcounter = server.shivaconf.getint('analyzer', 'individualcounter')
+                relaycounter = server.shivaconf.getint('analyzer', 'globalcounter')    
                 
-                # Following two lines are for debuggin, delete them later
-                value = mailFields['to'] in server.spammers_email
-                logging.info("\n[+]Spammers whitelist email-id found %s" % value)
-                
-                if (int(server.QueueReceiver.totalRelay) < relaycounter and int(record['relayed']) < individualcounter) | (mailFields['to'] in server.spammers_email):
-                    logging.info("[+]shivaprocessold Module: Relay counter has not reached limit yet. Shall relay this.")
+                if (int(server.QueueReceiver.totalRelay) > relaycounter):
+                    logging.info("[+]shivaprocessold Module: Limit reached. No relay.")
+                    #individualcounter = server.shivaconf.getint('analyzer', 'individualcounter')
+                                  
+                elif next((i for i, sublist in enumerate([myval for myval in server.whitelist_ids.values()]) if mailFields['to'] in sublist), -1) > -1:
+                    logging.info("[+]shivaprocessold Module: Recipient found in white list - relaying")
                     
                     # Following 3 lines does the relaying
                     queuePath = server.shivaconf.get('global', 'queuepath')
@@ -70,4 +70,36 @@ def main(mailFields, matchedHash, key, msgMailRequest):
                     record['relayed'] += 1
                     server.QueueReceiver.totalRelay += 1
                 else:
-                    logging.info("[+]shivaprocessold Module: Limit reached. No relay.")
+                    if record['counter'] <= 11:
+                        if record['counter'] == 11:
+                            logging.info("counter is = 11")
+                            logging.info("automated scanning has started - Not relaying anymore")
+                            server.whitelist_ids.pop(mailFields['s_id'], None)
+                            
+                            logging.info("poping automated key")
+                            for key, value in server.whitelist_ids.items():
+                                logging.info("key: %s, value: %s" % (key, value))
+                            
+                        else:
+                            logging.info("[+]shivaprocessold Module: Adding recipient to whitelist and relaying")
+                                    
+                            if mailFields['s_id'] in server.whitelist_ids:
+                                logging.info("spam-id in whitlist - extending")
+                                server.whitelist_ids[mailFields['s_id']].append(mailFields['to'])
+                            #mailFields['attachmentFileName'].append(fileName)
+                            else:
+                                logging.info("spam-id not in whitelist - adding")
+                                server.whitelist_ids[mailFields['s_id']] = mailFields['to'].split()
+                            
+                            logging.info("\n\nprocessold after adding new recipient\n\n")
+                            for key, value in server.whitelist_ids.items():
+                                logging.info("key: %s, value: %s" % (key, value))
+                            
+                            # Following 3 lines does the relaying
+                            queuePath = server.shivaconf.get('global', 'queuepath')
+                            processMessage = server.QueueReceiver(queuePath)
+                            processMessage.process_message(msgMailRequest)
+
+                            record['relayed'] += 1
+                            server.QueueReceiver.totalRelay += 1
+        

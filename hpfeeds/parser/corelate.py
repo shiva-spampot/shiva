@@ -68,7 +68,8 @@ def conclude(record):
             
             else:
                 ratio = ssdeep.compare(record['ssdeep'], d_record[1])
-                if ratio >= 85:
+                #if ratio >= 85:
+                if (int(record['len']) <= 150 and ratio >=95) or (int(record['len']) > 150 and ratio >= 80):
                     update(record, d_record[0])
                 else:
                     count += 1
@@ -338,7 +339,7 @@ def update(record, spam_id):
                     attachFile.write(record['attachmentFile'][i])
                     record['attachmentFile'][i] = path
                 
-                insert_attachment = "INSERT INTO `attachment`(`date`, `md5`, `attachment_file_name`, `attachment_file_path`, `attachment_file_type`, `spam_id`) VALUES('" + str(record['date']) + "', '" + str(record['attachmentFileMd5'][i]) + "', '" + str(mdb.escape_string(record['attachmentFileName'][i].encode('utf-8'))) + "', '" + str(mdb.escape_string(record['attachmentFilePath'][i].encode('utf-8'))) + "', '" + str(os.path.splitext(record['attachmentFileName'][i])[1].encode('utf-8')) + "', '" + str(spam_id) + "')"
+                insert_attachment = "INSERT INTO `attachment`(`date`, `md5`, `attachment_file_name`, `attachment_file_path`, `attachment_file_type`, `spam_id`) VALUES('" + str(record['date']) + "', '" + str(record['attachmentFileMd5'][i]) + "', '" + str(mdb.escape_string(record['attachmentFileName'][i].encode('utf-8'))) + "', '" + str(mdb.escape_string(record['attachmentFile'][i])) + "', '" + str(os.path.splitext(record['attachmentFileName'][i])[1].encode('utf-8')) + "', '" + str(spam_id) + "')"
                 
                 try:
                     exeSql.execute(insert_attachment)

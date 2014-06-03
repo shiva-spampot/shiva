@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS `inline` (
 CREATE TABLE IF NOT EXISTS `ip` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `date` date NOT NULL,
-  `sourceIP` varchar(15) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
+  `sourceIP` varchar(16) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
   PRIMARY KEY (`id`),
   KEY `sourceIP` (`sourceIP`),
   KEY `date` (`date`)
@@ -190,7 +190,7 @@ CREATE TABLE IF NOT EXISTS `spam` (
   `id` char(32) NOT NULL COMMENT 'Md5 of combination of fields',
   `from` varchar(200) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
   `subject` varchar(200) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
-  `to` mediumtext CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
+  `to` longtext CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
   `textMessage` mediumtext CHARACTER SET utf8 COLLATE utf8_unicode_ci COMMENT 'body of spam in text format',
   `htmlMessage` mediumtext CHARACTER SET utf8 COLLATE utf8_unicode_ci COMMENT 'body of spam in html format',
   `totalCounter` int(11) NOT NULL COMMENT 'total count of spam till date',
