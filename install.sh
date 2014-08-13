@@ -39,7 +39,7 @@ INSTALL_PATH=$WORK_PATH/shiva
 
 prerequisites () {
     printf "\n\n[*] Checking for the prerequisites in system.\n"
-    pkgs=("python" "g++" "python-dev" "python-virtualenv" "exim4-daemon-light" "libmysqlclient-dev" "make")
+    pkgs=("python" "g++" "python-dev" "python-virtualenv" "exim4-daemon-light" "libmysqlclient-dev" "make" "libffi-dev" "libfuzzy-dev" "automake" "autoconf")
     
     missing_counter=0
     for needed_pkg in "${pkgs[@]}"
@@ -103,12 +103,12 @@ receiver () {
     source bin/activate
     
     printf "\n[*] Installing Lamson (receiver) and creating project: \n"
-    pip install lamson
+    pip install lamson==1.3.4
     lamson gen -project receiver
     
     printf "\n[*] Installing required python modules for receiver:\n"
     easy_install -U distribute
-    pip install apscheduler
+    pip install apscheduler==2.1.2
     
     printf "\n[*] Copying neccesary files: \n"
     cp -v $WORK_PATH/receiver/core/encoding.py $INSTALL_PATH/shivaReceiver/lib/python2.7/site-packages/lamson/
@@ -142,15 +142,15 @@ analyzer () {
     source bin/activate
     
     printf "\n[*] Installing Lamson (analyzer) and creating project:\n"
-    pip install lamson
+    pip install lamson==1.3.4
     lamson gen -project analyzer
     
     printf "\n[*] Installing required python modules for analyzer:\n"
     easy_install -U distribute
-    pip install cython
-    pip install apscheduler
-    pip install MySQL-python
-    pip install ssdeep
+    pip install cython==0.20.2
+    pip install apscheduler==2.1.2
+    pip install MySQL-python==1.2.5
+    pip install ssdeep==3.1
     
     printf "\n[*] Copying neccesary files:\n"
     cp -v $WORK_PATH/analyzer/core/server.py $INSTALL_PATH/shivaAnalyzer/lib/python2.7/site-packages/lamson/
