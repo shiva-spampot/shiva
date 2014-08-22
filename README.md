@@ -4,6 +4,7 @@ SHIVA: Spam Honeypot with Intelligent Virtual Analyzer, is an open but controlle
 SHIVA is released under GNU GPL v3.
 
 
+
 Documentation
 -------------
 User manual can be found in the "docs" folder. The manual is divided into various sections

@@ -36,8 +36,13 @@ def queuereceiver():
         files = os.listdir(path)
         if len(files) > 0:
             for spam_file in files:
+                if os.stat(path + spam_file).st_size == 0:              # if somehow spam file size is zero
+                    os.remove(path + spam_file)
+                    continue
+                
                 with open(path + spam_file, "rb") as fp:
                     record = cPickle.load(fp)
+                
                 conclude(record)
                 os.remove(path + spam_file)
         else:
