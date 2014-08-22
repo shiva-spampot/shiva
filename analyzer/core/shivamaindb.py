@@ -69,9 +69,9 @@ def main():
     
 def insert(spam_id):
     
-    mailFields = {'s_id':'', 'ssdeep':'', 'to':'', 'from':'', 'text':'', 'html':'', 'subject':'', 'headers':'', 'sourceIP':'', 'sensorID':'', 'firstSeen':'', 'relayCounter':'', 'relayTime':'', 'count':0, 'len':'', 'inlineFileName':[], 'inlineFilePath':[], 'inlineFileMd5':[], 'attachmentFileName':[], 'attachmentFilePath':[], 'attachmentFileMd5':[], 'links':[],  'date': '' }
+    mailFields = {'s_id':'', 'ssdeep':'', 'to':'', 'from':'', 'text':'', 'html':'', 'subject':'', 'headers':'', 'sourceIP':'', 'sensorID':'', 'firstSeen':'', 'relayCounter':'', 'relayTime':'', 'count':0, 'len':'', 'inlineFileName':[], 'inlineFilePath':[], 'inlineFileMd5':[], 'attachmentFileName':[], 'attachmentFilePath':[], 'attachmentFileMd5':[], 'links':[],  'date': '', 'user':''}
     
-    spam = "SELECT `id`, `ssdeep`, `to`, `from`, `textMessage`, `htmlMessage`, `subject`, `headers`, `sourceIP`, `sensorID`, `firstSeen`, `relayCounter`, `relayTime`, `totalCounter`, `length` FROM `spam` WHERE `id` = '" + str(spam_id) + "'"
+    spam = "SELECT `id`, `ssdeep`, `to`, `from`, `textMessage`, `htmlMessage`, `subject`, `headers`, `sourceIP`, `sensorID`, `firstSeen`, `relayCounter`, `relayTime`, `totalCounter`, `length`, `user` FROM `spam` WHERE `id` = '" + str(spam_id) + "'"
     
     attachments = "SELECT `id`, `spam_id`, `file_name`, `attach_type`, `attachmentFileMd5`, `date`, `attachment_file_path` FROM `attachments` WHERE `spam_id` = '" + str(spam_id) + "'"
     
@@ -84,7 +84,7 @@ def insert(spam_id):
         tempDb.execute(spam)
         spamrecord = tempDb.fetchone()
         if spamrecord:
-            mailFields['s_id'], mailFields['ssdeep'], mailFields['to'], mailFields['from'], mailFields['text'], mailFields['html'], mailFields['subject'], mailFields['headers'], mailFields['sourceIP'], mailFields['sensorID'], mailFields['firstSeen'], mailFields['relayCounter'], mailFields['relayTime'], mailFields['count'], mailFields['len'] = spamrecord
+            mailFields['s_id'], mailFields['ssdeep'], mailFields['to'], mailFields['from'], mailFields['text'], mailFields['html'], mailFields['subject'], mailFields['headers'], mailFields['sourceIP'], mailFields['sensorID'], mailFields['firstSeen'], mailFields['relayCounter'], mailFields['relayTime'], mailFields['count'], mailFields['len'], mailFields['user'] = spamrecord
             
             mailFields['date'] = str(mailFields['firstSeen']).split(' ')[0]
             # Saving 'attachments' table's data
@@ -115,8 +115,8 @@ def insert(spam_id):
             
             
             # Inserting data in main db
-            values = mailFields['headers'], mailFields['to'], mailFields['from'], mailFields['subject'], mailFields['text'], mailFields['html'], str(mailFields['count']), mailFields['s_id'], mailFields['ssdeep'], str(mailFields['len'])
-            insert_spam = "INSERT INTO `spam`(`headers`, `to`, `from`, `subject`, `textMessage`, `htmlMessage`, `totalCounter`, `id`, `ssdeep`, `length`) VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+            values = mailFields['headers'], mailFields['to'], mailFields['from'], mailFields['subject'], mailFields['text'], mailFields['html'], str(mailFields['count']), mailFields['s_id'], mailFields['ssdeep'], str(mailFields['len']), str(mailFields['user'])
+            insert_spam = "INSERT INTO `spam`(`headers`, `to`, `from`, `subject`, `textMessage`, `htmlMessage`, `totalCounter`, `id`, `ssdeep`, `length`, `user`) VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
                         
             try:
                 mainDb.execute(insert_spam, values)
@@ -223,7 +223,7 @@ def insert(spam_id):
                     insert_inline = "INSERT INTO `inline`(`date`, `md5`, `inline_file_name`, `inline_file_path`, `spam_id` ) VALUES(%s, %s, %s, %s, %s)"
                     i = i + 1
                     try:
-                        #mainDb.execute(insert_inline, values)
+                        mainDb.execute(insert_inline, values)
                     except mdb.Error, e:
                         print e
                         if notify is True:
@@ -236,12 +236,12 @@ def insert(spam_id):
         
     
 def update(tempid, mainid):
-    mailFields = {'sourceIP':'', 'sensorID':'', 'firstSeen':'', 'relayCounter':'', 'relayTime':'', 'count':0, 'inlineFileName':[], 'inlineFilePath':[], 'inlineFileMd5':[], 'attachmentFileName':[], 'attachmentFilePath':[], 'attachmentFileMd5':[], 'links':[],  'date': '', 'to': ''}
+    mailFields = {'sourceIP':'', 'sensorID':'', 'firstSeen':'', 'relayCounter':'', 'relayTime':'', 'count':0, 'inlineFileName':[], 'inlineFilePath':[], 'inlineFileMd5':[], 'attachmentFileName':[], 'attachmentFilePath':[], 'attachmentFileMd5':[], 'links':[],  'date': '', 'to': '', 'user':''}
     
     tempurls = "SELECT `hyperlink` FROM `links` WHERE `spam_id` = '" + str(tempid) + "'"
     tempattachs = "SELECT `file_name`, `attachment_file_path`, `attach_type`, `attachmentFileMd5` FROM `attachments` WHERE `spam_id` = '" + str(tempid) + "'"
     tempsensors = "SELECT `sensorID` FROM `sensors` WHERE `spam_id` = '" + str(tempid) + "'"
-    tempspam = "SELECT `firstSeen`, `relayCounter`, `relayTime`, `sourceIP`, `totalCounter`, `to` FROM `spam` WHERE `id` = '" + str(tempid) + "'"
+    tempspam = "SELECT `firstSeen`, `relayCounter`, `relayTime`, `sourceIP`, `totalCounter`, `to`, `user` FROM `spam` WHERE `id` = '" + str(tempid) + "'"
     
     try:
         tempDb.execute(tempurls)
@@ -280,7 +280,7 @@ def update(tempid, mainid):
         mailFields['sourceIP'] = record[3]
         mailFields['count'] = record[4]
         mailFields['to'] = record[5]
-        
+        mailFields['user'] = record[6]
         
     except mdb.Error, e:
         print e
@@ -519,6 +519,31 @@ def update(tempid, mainid):
                     if notify is True:
                         shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - insert_inline %s" % e)
             i = i + 1
+    
+    # Checking for users
+    new_users_list = str(mailFields['user']).split(", ")
+    check_user = "SELECT `user` FROM `spam` WHERE `id` = '" + str(mainid) + "'"
+    try:
+        mainDb.execute(check_user)
+    except mdb.Error, e:
+        print e
+        if notify is True:
+            shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - checkIP %s" % e)
+            
+    old_users = str(mainDb.fetchone()[0])
+    old_users_lists = old_users.split(", ")
+    for user in new_users_list:            
+        if user not in old_users:
+            old_users = old_users + ", " + user
+            
+    values = (old_users, str(mainid))
+    update_users = "UPDATE `spam` SET `user` = %s WHERE `id` = %s"
+    try:
+        mainDb.execute(update_users, values)
+    except mdb.Error, e:
+        print e
+        if notify is True:
+            shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - update_users %s" % e)
             
     # Last but not the least, updating relay table.
     if int(mailFields['relayCounter']) > 0:
@@ -549,7 +574,6 @@ def update(tempid, mainid):
                 print e
                 if notify is True:
                     shivanotifyerrors.notifydeveloper("[-] Error (Module shivamaindb.py) - insert_relay %s" % e)
-             
 
 if __name__ == '__main__':
     tempDb = shivadbconfig.dbconnect()

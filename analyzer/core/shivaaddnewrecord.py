@@ -51,6 +51,7 @@ def main(mailFields, key, msgMailRequest):
                 'ssdeep':mailFields['ssdeep'], 
                 's_id':mailFields['s_id'], 
                 'len':mailFields['len'], 
+                'user':mailFields['user'], 
                 'counter':1, 
                 'relayed':0 }
 

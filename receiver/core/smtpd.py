@@ -121,7 +121,8 @@ class SMTPChannel(asynchat.async_chat):
         self.username = None
         self.password = None
         self.credential_validator = credential_validator
-        
+        self.authenticated_user = None
+
         self.__server = server
         self.__conn = conn
         self.__addr = addr
@@ -210,7 +211,8 @@ class SMTPChannel(asynchat.async_chat):
                 self.__peer,
                 self.__mailfrom,
                 self.__rcpttos,
-                self.__data
+                self.__data,
+                self.authenticated_user
             )
             self.__rcpttos = []
             self.__mailfrom = None
@@ -267,12 +269,14 @@ class SMTPChannel(asynchat.async_chat):
                 self.push('501 invalid LOGIN encoding')
                 self.authenticating = False
             
-            if self.credential_validator and self.credential_validator.validate(self.username, self.password):
-                self.authenticated = True
-                self.push('235 Authentication successful.')
-            else:
-                self.push('454 Temporary authentication failure.')
-                self.close_when_done()
+            if self.credential_validator:
+                validated, self.authenticated_user = self.credential_validator.validate(self.username, self.password)
+                if validated:                
+                    self.authenticated = True
+                    self.push('235 Authentication successful.')
+                else:
+                    self.push('454 Temporary authentication failure.')
+                    self.close_when_done()
         
     # SMTP and ESMTP commands
 
@@ -581,9 +585,9 @@ class CredentialValidator(object):
         i = 0
         while i < len(password):
             if (username == self.username[i]) and (password == self.password[i]):
-                return True
+                return True, self.username[i]
             i += 1
-        return False
+        return False, None
         
         
 class Options:

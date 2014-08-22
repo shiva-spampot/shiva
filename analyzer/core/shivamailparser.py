@@ -25,7 +25,7 @@ import server
 
 
 # Global dictionary to store parsed fields of spam
-mailFields = {'headers':'', 'to':'', 'from':'', 'subject':'', 'date':'', 'firstSeen':'', 'lastSeen':'', 'firstRelayed':'', 'lastRelayed':'', 'sourceIP':'', 'sensorID':'', 'text':'', 'html':'', 'inlineFileName':[], 'inlineFile':[], 'inlineFileMd5':[], 'attachmentFileName':[], 'attachmentFile':[], 'attachmentFileMd5':[], 'links':[], 'ssdeep':'', 's_id':'', 'len':''}
+mailFields = {'headers':'', 'to':'', 'from':'', 'subject':'', 'date':'', 'firstSeen':'', 'lastSeen':'', 'firstRelayed':'', 'lastRelayed':'', 'sourceIP':'', 'sensorID':'', 'text':'', 'html':'', 'inlineFileName':[], 'inlineFile':[], 'inlineFileMd5':[], 'attachmentFileName':[], 'attachmentFile':[], 'attachmentFileMd5':[], 'links':[], 'ssdeep':'', 's_id':'', 'len':'', 'user':''}
 
 randomText = """@Deprecation
 In Solr 1.3, many classes were moved around. Although classes compiled against 1.2 will run in 1.3, updating class references is recommended.
@@ -233,8 +233,9 @@ def main(key, msgMailRequest):
             return None
 
         try:
-            mailFields['sourceIP'] = key.split("-")[-2]
-            mailFields['sensorID'] = key.split("-")[-1]
+            mailFields['sourceIP'] = key.split("-")[-3]
+            mailFields['sensorID'] = key.split("-")[-2]
+            mailFields['user'] = key.split("-")[-1]
 
         except Exception, e:
             logging.critical("[-] Error (Module shivamailparser.py) - some issue in parsing 'sourceIP and sensorID' field %s" % key)
