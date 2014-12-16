@@ -46,7 +46,7 @@ def queuereceiver():
                     except Exception, e:
                         print "Error occured while unserializing. -> %s" % str(e)
                         continue
-                if type(record) == "dict":
+                if type(record) is dict:
                     conclude(record)
 
                 try:
