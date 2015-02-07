@@ -101,14 +101,16 @@ receiver () {
     virtualenv shivaReceiver
     cd shivaReceiver
     source bin/activate
-    
-    printf "\n[*] Installing Lamson (receiver) and creating project: \n"
-    pip install lamson==1.3.4
-    lamson gen -project receiver
-    
+
     printf "\n[*] Installing required python modules for receiver:\n"
     easy_install -U distribute
     pip install apscheduler==2.1.2
+    pip install docutils
+    pip install python-daemon==2.0.2
+
+    printf "\n[*] Installing Lamson (receiver) and creating project: \n"
+    pip install lamson==1.3.4
+    lamson gen -project receiver
     
     printf "\n[*] Copying neccesary files: \n"
     cp -v $WORK_PATH/receiver/core/encoding.py $INSTALL_PATH/shivaReceiver/lib/python2.7/site-packages/lamson/
@@ -140,17 +142,19 @@ analyzer () {
     virtualenv shivaAnalyzer
     cd shivaAnalyzer
     source bin/activate
-    
-    printf "\n[*] Installing Lamson (analyzer) and creating project:\n"
-    pip install lamson==1.3.4
-    lamson gen -project analyzer
-    
+
     printf "\n[*] Installing required python modules for analyzer:\n"
     easy_install -U distribute
     pip install cython==0.20.2
     pip install apscheduler==2.1.2
     pip install MySQL-python==1.2.5
     pip install ssdeep==3.1
+    pip install docutils
+    pip install python-daemon==2.0.2
+
+    printf "\n[*] Installing Lamson (analyzer) and creating project:\n"
+    pip install lamson==1.3.4
+    lamson gen -project analyzer
     
     printf "\n[*] Copying neccesary files:\n"
     cp -v $WORK_PATH/analyzer/core/server.py $INSTALL_PATH/shivaAnalyzer/lib/python2.7/site-packages/lamson/
