@@ -230,7 +230,7 @@ class SMTPChannel(asynchat.async_chat):
 
         split_args = arg.split(' ')
         
-        if 'LOGIN' == split_args[0]:
+        if 'LOGIN' == split_args[0].upper():
             self.authenticating = True
             
             # Some implmentations of 'LOGIN' seem to provide the username
