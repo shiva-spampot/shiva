@@ -583,7 +583,7 @@ class CredentialValidator(object):
 
     def validate(self, username, password):
         i = 0
-        while i < len(password):
+        while i < len(self.username):
             if (username == self.username[i]) and (password == self.password[i]):
                 return True, self.username[i]
             i += 1
