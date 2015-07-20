@@ -1,0 +1,116 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>1. About &mdash; SHIVA 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="author" title="About these documents" href="#" />
+    <link rel="top" title="SHIVA 1.0 documentation" href="index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="about">
+<h1>1. About<a class="headerlink" href="#about" title="Permalink to this headline">¶</a></h1>
+<p>SHIVA (<em>Spam Honeypot with Intelligent Virtual Analyzer</em>), is a spampot(i.e. a spam honeypot) written in Python2.7, built on top of Lamson framework. SHIVA is an open-source, high interaction honeypot, and is released under GNU General Public Licence version 3. SHIVA provides capabilities of collecting and analyzing all spam thrown at it. Analysis of data captured can be used to get information of phishing attacks, scamming campaigns, malware campaigns, spam botnets, etc. SHIVA uses MySQL for storing information. Below are some of the stand out features of SHIVA:</p>
+<div class="section" id="features">
+<h2>1.1 Features<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><strong>Controlled Relay:</strong> SHIVA provides the ability to control the relay part completely. User can enable/disable and set the number of spam to be relayed, in the configuration file.Here is the required section.</li>
+<li><strong>Open Source:</strong> SHIVA is open source, therefore it is very easy to extend the capabilities. For example, one could easily write a simple module to send the attachments to VirusTotal for further analysis.</li>
+<li><strong>Identifying Unique Spam:</strong> SHIVA uses fuzzy hashingtechnique to distinguish between new and already seen spam. This makes it possible to analyze millions of spam and still keeping the database size in check.Python implementation of ssdeep is used.</li>
+<li><strong>Extracting Information from Spam:</strong> Every spam received passes through the mail parser. SHIVA&#8217;s mail parser is written to extract all the information that is important. Mail parser extracts source IP, spam&#8217;s various parts like -to, from, header, subject, body, URLs, attachments, etc. This information is then saved in database, if user has opted for setting up database storage.</li>
+<li><strong>Supports Authentication:</strong> SHIVA provides more control over the SMTP receiver by adding SMTP authentication feature to it. This way, a user can restrict the access to his SMTP server bysetting up credentials.</li>
+<li><strong>Hpfeeds sharing:</strong> SHIVA also makes sharing the analyzed data easy by adding the Hpfeeds/Hpfriends support. Hpfriends is the social data-sharing platform by The Honeynet Project. Again, Hpfeeds/ Hpfriends can be configured by setting up related options in configuration file.</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">1. About</a><ul>
+<li><a class="reference internal" href="#features">1.1 Features</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/about.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, Sumit Sharma & Rahul Binjve.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+      |
+      <a href="_sources/about.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
