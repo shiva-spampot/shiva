@@ -252,12 +252,14 @@ class SMTPChannel(asynchat.async_chat):
                 self.push('501 invalid LOGIN encoding')
                 self.authenticating = False
                 
-            try:
-                self.username = base64.b64decode(arg)
-            except Exception, e:
-                self.push('501 invalid LOGIN encoding')
-                self.authenticating = False
-            self.push('334 ' + base64.b64encode('Password'))
+            # Fix for auth issue caused by a mass mailer.
+            if len(split_args) == 1:
+                try:
+                    self.username = base64.b64decode(arg)
+                except Exception, e:
+                    self.push('501 invalid LOGIN encoding')
+                    self.authenticating = False
+                self.push('334 ' + base64.b64encode('Password'))
         else:            
             self.authenticating = False
             if len(arg) < 4:
