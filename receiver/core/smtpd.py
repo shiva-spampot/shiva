@@ -121,7 +121,8 @@ class SMTPChannel(asynchat.async_chat):
         self.username = None
         self.password = None
         self.credential_validator = credential_validator
-        
+        self.authenticated_user = None
+
         self.__server = server
         self.__conn = conn
         self.__addr = addr
@@ -210,7 +211,8 @@ class SMTPChannel(asynchat.async_chat):
                 self.__peer,
                 self.__mailfrom,
                 self.__rcpttos,
-                self.__data
+                self.__data,
+                self.authenticated_user
             )
             self.__rcpttos = []
             self.__mailfrom = None
@@ -228,7 +230,7 @@ class SMTPChannel(asynchat.async_chat):
 
         split_args = arg.split(' ')
         
-        if 'LOGIN' == split_args[0]:
+        if 'LOGIN' == split_args[0].upper():
             self.authenticating = True
             
             # Some implmentations of 'LOGIN' seem to provide the username
@@ -250,12 +252,14 @@ class SMTPChannel(asynchat.async_chat):
                 self.push('501 invalid LOGIN encoding')
                 self.authenticating = False
                 
-            try:
-                self.username = base64.b64decode(arg)
-            except Exception, e:
-                self.push('501 invalid LOGIN encoding')
-                self.authenticating = False
-            self.push('334 ' + base64.b64encode('Password'))
+            # Fix for auth issue caused by a mass mailer.
+            if len(split_args) == 1:
+                try:
+                    self.username = base64.b64decode(arg)
+                except Exception, e:
+                    self.push('501 invalid LOGIN encoding')
+                    self.authenticating = False
+                self.push('334 ' + base64.b64encode('Password'))
         else:            
             self.authenticating = False
             if len(arg) < 4:
@@ -267,12 +271,14 @@ class SMTPChannel(asynchat.async_chat):
                 self.push('501 invalid LOGIN encoding')
                 self.authenticating = False
             
-            if self.credential_validator and self.credential_validator.validate(self.username, self.password):
-                self.authenticated = True
-                self.push('235 Authentication successful.')
-            else:
-                self.push('454 Temporary authentication failure.')
-                self.close_when_done()
+            if self.credential_validator:
+                validated, self.authenticated_user = self.credential_validator.validate(self.username, self.password)
+                if validated:                
+                    self.authenticated = True
+                    self.push('235 Authentication successful.')
+                else:
+                    self.push('454 Temporary authentication failure.')
+                    self.close_when_done()
         
     # SMTP and ESMTP commands
 
@@ -579,11 +585,11 @@ class CredentialValidator(object):
 
     def validate(self, username, password):
         i = 0
-        while i < len(password):
+        while i < len(self.username):
             if (username == self.username[i]) and (password == self.password[i]):
-                return True
+                return True, self.username[i]
             i += 1
-        return False
+        return False, None
         
         
 class Options:

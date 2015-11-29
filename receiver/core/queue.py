@@ -25,14 +25,15 @@ config = ConfigParser.ConfigParser()
 config.read(confpath)
 sensorName = config.get('receiver', 'sensorname')
 PEER = '' # Shiva - PEER gets its value from server.py module(process_message) when ever a new spam is received
+USER = '' # Shiva - USER gets its value from server.py module(process_message) when ever a new spam is received
 
 class SafeMaildir(mailbox.Maildir):
     def _create_tmp(self):
 	global PEER
 	logging.critical("PEER in queue: %s", PEER)				# Shiva - Appending IP address of source to file name
         now = time.time()
-        uniq = "%s.M%sP%sQ%s-%s-%s" % (int(now), int(now % 1 * 1e6), os.getpid(),
-                                    mailbox.Maildir._count, PEER[0], sensorName) 
+        uniq = "%s.M%sP%sQ%s-%s-%s-%s" % (int(now), int(now % 1 * 1e6), os.getpid(),
+                                    mailbox.Maildir._count, PEER[0], sensorName, USER) 
         path = os.path.join(self._path, 'tmp', uniq)
         try:
             os.stat(path)

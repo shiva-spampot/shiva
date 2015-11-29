@@ -197,6 +197,7 @@ CREATE TABLE IF NOT EXISTS `spam` (
   `ssdeep` varchar(120) DEFAULT NULL COMMENT 'SSDeep hash of the mail',
   `headers` text NOT NULL COMMENT 'Header of Spam',
   `length` int(11) NOT NULL COMMENT 'Length of the spam',
+  `user` varchar(200) NOT NULL COMMENT 'Username by which spammer logged in into SMTP',
   PRIMARY KEY (`id`),
   KEY `subject` (`subject`),
   KEY `totalCounter` (`totalCounter`),

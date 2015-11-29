@@ -48,6 +48,10 @@ def main(mailFields, matchedHash, key, msgMailRequest):
             recipients = record['to'].split(",")
             if mailFields['to'] not in recipients:
                 record['to'] = record['to'] + "," + mailFields['to']
+                
+            user_list = record['user'].split(", ")
+            if mailFields['user'] not in user_list:
+                record['user'] = record['user'] + ", " + mailFields['user']
 
             record['counter'] += 1
             logging.info("value of record counter has reached: %s" % record['counter'])

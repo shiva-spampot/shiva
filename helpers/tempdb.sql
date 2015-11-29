@@ -80,5 +80,6 @@ CREATE TABLE IF NOT EXISTS `spam` (
   `relayTime` datetime NOT NULL COMMENT 'date of first relay',
   `totalCounter` int(11) NOT NULL COMMENT 'total count of spam till date',
   `length` int(11) NOT NULL COMMENT 'Length of the spam',
+  `user` varchar(100) NOT NULL COMMENT 'Username by which spammer logged in into SMTP',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT COLLATE=utf8mb4_unicode_ci;

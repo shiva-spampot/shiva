@@ -204,12 +204,12 @@ class SMTPReceiver(smtpd.SMTPServer):
                 kwargs={'timeout':0.1, 'use_poll':True})
         self.poller.start()
 
-    def process_message(self, Peer, From, To, Data):
+    def process_message(self, Peer, From, To, Data, User):
         """
         Called by smtpd.SMTPServer when there's a message received.
         """
-        queue.PEER = Peer							# iSpam - Passing Remote socket to variable PEER defined in 'queue.py' module
-
+        queue.PEER = Peer                                               # Shiva - Passing Remote socket to variable PEER defined in 'queue.py' module
+        queue.USER = User or "none"                                     # In case of no username, it defaults to "none"
         try:
             logging.debug("Message received from Peer: %r, From: %r, to To %r." % (Peer, From, To))
             routing.Router.deliver(mail.MailRequest(Peer, From, To, Data))
