@@ -135,21 +135,21 @@ def writepartsrecurse(msg):
             payload = fix_padding_for_attachments(msg.get_payload())
             mailFields['attachmentFile'].append(payload)
             mailFields['attachmentFileName'].append(fileName)
-            mailFields['attachmentFileMd5'].append(md5checksum((payload).decode('base64')))
+            mailFields['attachmentFileMd5'].append(md5checksum(payload))
 
         elif msg['Content-Disposition'] != None and msg['Content-Disposition'].find('attachment;') >= 0:    # if attachment found
             logging.critical("Inside Attachment handling")
             payload = fix_padding_for_attachments(msg.get_payload())
             mailFields['attachmentFile'].append(payload)
             mailFields['attachmentFileName'].append(fileName)
-            mailFields['attachmentFileMd5'].append(md5checksum((payload).decode('base64')))
+            mailFields['attachmentFileMd5'].append(md5checksum(payload))
 
         # Sometimes "Content-Disposition" is missing, "attachment" is missing but "file name" is there with binary content
         elif msg.get_filename() != None:         
             payload = fix_padding_for_attachments(msg.get_payload())
             mailFields['attachmentFile'].append(payload)
             mailFields['attachmentFileName'].append(fileName)
-            mailFields['attachmentFileMd5'].append(md5checksum((payload).decode('base64')))
+            mailFields['attachmentFileMd5'].append(md5checksum(payload))
 
         else:
             logging.critical("[-] - (Module ShivaParser.py) No match for text/html/content_type or Content-Disposition -")
