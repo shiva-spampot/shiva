@@ -1,0 +1,5 @@
+wheel
+cffi==1.15.0
+pycparser==2.21
+six==1.16.0
+ssdeep==3.4
