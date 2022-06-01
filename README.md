@@ -43,7 +43,8 @@ As mentioned above, both the components are independent and can be run via termi
 The easiest way to run Receiver is via Docker. To build the Receiver, clone this project and run in source directory:
 
 ```bash
-docker build -t shiva-spampot/receiver -f Dockerfile_receiver  .
+cd receiver/
+docker build -t shiva-spampot/receiver .
 ```
 Once the command completes, you can following command to start the container:
 
@@ -64,7 +65,8 @@ To change the container's host name, replace the value passed to `-h` switch in 
 The easiest way to run Analyzer is via Docker. To build the Analyzer, clone this project and run in source directory:
 
 ```bash
-docker build -t shiva-spampot/analyzer -f Dockerfile_analyzer  .
+cd analyzer/
+docker build -t shiva-spampot/analyzer .
 ```
 Once the command completes, you can following command to start the container:
 
