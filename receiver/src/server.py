@@ -9,7 +9,7 @@ import json
 # TODO: Implement SMTP AUTH using https://github.com/bcoe/secure-smtpd
 class SHIVAServer(SMTPServer):
     unique_ssdeep_hashes = set()
-    unique_sha1_hashes = set()
+    unique_sha256_hashes = set()
 
     def process_message(self, peer, mailfrom, rcpttos, data, **kwargs):
         """ Get more detailed documentation in smtpd.SMTPServer class
@@ -27,19 +27,19 @@ class SHIVAServer(SMTPServer):
     def _process_spam_message(self, peer, mailfrom, rcpttos, data):
         print("Received spam, parsing now.")
 
-        sha1_hash, ssdeep_hash = utils.calculate_hashes(data)
-        print(f"SHA1 Hash: {sha1_hash}")
+        sha256_hash, ssdeep_hash = utils.calculate_hashes(data)
+        print(f"SHA256 Hash: {sha256_hash}")
         print(f"SSDEEP Hash: {ssdeep_hash}")
 
-        if self._is_spam_duplicate(len(data), sha1_hash, ssdeep_hash):
+        if self._is_spam_duplicate(len(data), sha256_hash, ssdeep_hash):
             print("Duplicate spam found, will not process.")
         else:
             self.unique_ssdeep_hashes.add(ssdeep_hash)
-            self.unique_sha1_hashes.add(sha1_hash)
+            self.unique_sha256_hashes.add(sha256_hash)
 
             spam_meta_details = {
                 "ssdeep": ssdeep_hash,
-                "sha1": sha1_hash
+                "sha256": sha256_hash
             }
             client_info = self._parse_client_info(peer)
             if client_info:
@@ -51,10 +51,10 @@ class SHIVAServer(SMTPServer):
 
             print(spam_meta_details)
 
-            self._write_files(sha1_hash, spam_meta_details, data)
+            self._write_files(sha256_hash, spam_meta_details, data)
 
-    def _is_spam_duplicate(self, data_size, sha1_hash, ssdeep_hash):
-        if sha1_hash in self.unique_sha1_hashes:
+    def _is_spam_duplicate(self, data_size, sha256_hash, ssdeep_hash):
+        if sha256_hash in self.unique_sha256_hashes:
             return True
 
         # SSDEEP needs data to be larger than 4KB for generating meaningful hashes.

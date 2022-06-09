@@ -1,5 +1,5 @@
 import os
-from hashlib import sha1
+from hashlib import sha256
 
 import ssdeep
 
@@ -17,7 +17,7 @@ def init_receiver():
 
 
 def calculate_hashes(content: bytes) -> tuple:
-    return sha1(content).hexdigest(), ssdeep.hash(content)
+    return sha256(content).hexdigest(), ssdeep.hash(content)
 
 
 def compare_ssdeep_hashes(unique_hashes, new_hash):
