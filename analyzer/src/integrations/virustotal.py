@@ -14,6 +14,7 @@ class VTLookup(object):
 
     def lookup_file_reputation(self, file_hash):
         url = f"{self.base_url}/files/{file_hash}"
+        print(f"Requesting URL: {url}")
         try:
             r = self._session.get(url)
             if r.status_code == 200:
