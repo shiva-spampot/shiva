@@ -14,7 +14,7 @@
 
 ## Background
 
-SHIVA: Spam Honeypot with Intelligent Virtual Analyzer, is an open but controlled relay Spam Honeypot (SpamPot). SHIVA is written in Python 3 and will eventually use Elasticsearch for storing information parsed from the received spams. Analysis of data captured can be used to get information of phishing attacks, scamming campaigns, malware campaigns, spam botnets, etc.
+SHIVA: Spam Honeypot with Intelligent Virtual Analyzer, is an open but controlled relay Spam Honeypot (SpamPot). SHIVA is written in Python 3 and will eventually use Elasticsearch/OpenSearch for storing information parsed from the received spams. Analysis of data captured can be used to get information of phishing attacks, scamming campaigns, malware campaigns, spam botnets, etc.
 
 Originally, SHIVA was initially developed during 2012/2013 and used the Lamson framework in the background. However, due to lack of time, the project was not updated regularly. The old code was complicated and had a lot of monkey-patching which made it harder to maintain. Current efforts will focus on simplifying the codebase, and adding features like easy deployment via Docker, better documentation, Elasticsearch integration for search/analysis, threat intel service lookups, updated OSS licence, etc.
 
@@ -30,7 +30,7 @@ Receiver essentially is an SMTP server which accepts all emails thrown at it. Th
 
 ### Analyzer
 
-Analyzer (still in development) is the actual brain of the operation and responsible for parsing and analysing spams.The analyzer picks spams from directory shared with receiver and parses the .eml and metadata file. It extracts information such as recipients, URLs, attachments, mail body, etc. Indicators extracted from the email can then be queries via 3rd party integrations such as Virustotal, Hatching Triage, etc., if these are configured with API keys. This extracted information is then indexed in Elasticsearch for easier searching and analysis later. This information can also be shared with other analysts/researchers via Hpfeeds integration.
+Analyzer (still in development) is the actual brain of the operation and responsible for parsing and analysing spams.The analyzer picks spams from directory shared with receiver and parses the .eml and metadata file. It extracts information such as recipients, URLs, attachments, mail body, etc. Indicators extracted from the email can then be queries via 3rd party integrations such as Virustotal, Hatching Triage, etc., if these are configured with API keys. This extracted information is then indexed in Elasticsearch/OpenSearch for easier searching and analysis later. This information can also be shared with other analysts/researchers via Hpfeeds integration.
 
 As mentioned above, both the components are independent and can be run via terminal or Docker. The components don’t need to be on the same box as long as they can access a shared folder.
 
@@ -80,5 +80,8 @@ Right now, the logic to parse emails is still in development and analyzer code i
 ## To Do
 
 - [ ] Add support for SMTP authentication
-- [x] Add Analyzer
-- [ ] Finish Analyzer
+- [x] Add Analyzer code
+- [x] Email parsing (basic)
+- [x] Virustotal lookup for attachments
+- [ ] Extract URLs from mail body
+- [ ] Index records in ES/Opensearch
