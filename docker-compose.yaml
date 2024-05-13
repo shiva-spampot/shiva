@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  shiva-receiver:
+    image: referefrefref/shiva-receiver:latest
+    ports:
+      - "2525:2525"
+    environment:
+      - SHIVA_HOST=0.0.0.0
+      - SHIVA_PORT=2525
+      - QUEUE_DIR=/tmp/spam_queue/
+      - THRESHOLD=94
+      - SENSOR_NAME=shiva-honeypot
+    volumes:
+      - ./spam_queue:/tmp/spam_queue
+    command: ["/home/shiva-spampot/receiver/bin/python3", "/home/shiva-spampot/receiver/run_server.py"]
+
+  shiva-analyzer:
+    image: referefrefref/shiva-analyzer:latest
+    environment:
+      - QUEUE_DIR=/tmp/spam_queue/
+      - VT_API_KEY=
+    volumes:
+      - ./spam_queue:/tmp/spam_queue
+    command: ["/home/shiva-spampot/analyzer/bin/python3", "/home/shiva-spampot/analyzer/run_analyzer.py"]
