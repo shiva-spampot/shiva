@@ -1,66 +1,93 @@
-import os.path
-from smtpd import SMTPServer
+import asyncio
+import datetime
+import json
+import logging
+import os
+import random
+import re
+import time
+import uuid
+from aiosmtpd.controller import Controller
+from aiosmtpd.smtp import AuthResult, LoginPassword
+from aiosmtpd.smtp import SMTP as SMTPServer
+from aiosmtpd.smtp import Envelope as SMTPEnvelope
+from aiosmtpd.smtp import Session as SMTPSession
 
 import config
-import utils
-import json
 
 
-# TODO: Implement SMTP AUTH using https://github.com/bcoe/secure-smtpd
-class SHIVAServer(SMTPServer):
-    unique_ssdeep_hashes = set()
-    unique_sha256_hashes = set()
+class Authenticator:
+    def __call__(
+        self,
+        server: SMTPServer,
+        session: SMTPSession,
+        envelope: SMTPEnvelope,
+        mechanism: str,
+        auth_data,
+    ) -> AuthResult:
+        # TODO Store credentials in a DB/config.
+        test_passwd = b"password"
+        test_username = b"username"
 
-    def process_message(self, peer, mailfrom, rcpttos, data, **kwargs):
-        """ Get more detailed documentation in smtpd.SMTPServer class
-        :param peer: tuple: peer contains (ipaddr, port) of the client to our smtp port.
-        :param mailfrom: str: mailfrom is the raw address the client claims the message is coming from.
-        :param rcpttos: list: rcpttos is a list of raw recipient addresses.
-        :param data: bytes: data is a string containing the entire full text of the message.
-        :return: This function should return None for a normal `250 Ok' response;
-        otherwise, it should return the desired response string in RFC 821
-        format.
-        """
-        # Not doing anything with kwargs for now.
-        self._process_spam_message(peer, mailfrom, rcpttos, data)
+        resp = AuthResult(success=False, handled=False)
+        if mechanism not in ("LOGIN", "PLAIN"):
+            return resp
+        if not isinstance(auth_data, LoginPassword):
+            return resp
+
+        username = auth_data.login
+        password = auth_data.password
+        if username == test_username and password == test_passwd:
+            resp = AuthResult(success=True)
+
+        return resp
+
+
+class ShivaHandler:
+    async def handle_DATA(
+        self,
+        server: SMTPServer,
+        session: SMTPSession,
+        envelope: SMTPEnvelope,
+    ):
+        # Handle incoming email data
+        peer = session.peer
+        mail_from = envelope.mail_from
+        rcpt_tos = envelope.rcpt_tos
+        data = envelope.content  # type: bytes
+
+        email_error = self.validate_emails(mail_from, rcpt_tos)
+        if email_error:
+            return email_error
+
+        self._process_spam_message(peer, mail_from, rcpt_tos, data)
+        self._random_delay()
+
+        return "250 OK"
+
+    def validate_emails(self, mail_from: str, rcpt_tos: list) -> str:
+        if not self.is_valid_email(mail_from):
+            return "554 Invalid sender address"
+
+        for recipient in rcpt_tos:
+            if not self.is_valid_email(recipient):
+                return f"554 Invalid recipient address: {recipient}"
 
     def _process_spam_message(self, peer, mailfrom, rcpttos, data):
         print("Received spam, parsing now.")
+        spam_meta_details = {}
+        client_info = self._parse_client_info(peer)
+        if client_info:
+            spam_meta_details.update(client_info)
 
-        sha256_hash, ssdeep_hash = utils.calculate_hashes(data)
-        print(f"SHA256 Hash: {sha256_hash}")
-        print(f"SSDEEP Hash: {ssdeep_hash}")
+        spam_meta_details["sender"] = mailfrom
+        spam_meta_details["recipients"] = rcpttos
+        spam_meta_details["sensor_name"] = config.SENSOR_NAME
+        spam_meta_details["index_ts"] = self.get_current_dt()
 
-        if self._is_spam_duplicate(len(data), sha256_hash, ssdeep_hash):
-            print("Duplicate spam found, will not process.")
-        else:
-            self.unique_ssdeep_hashes.add(ssdeep_hash)
-            self.unique_sha256_hashes.add(sha256_hash)
+        print(spam_meta_details)
 
-            spam_meta_details = {
-                "ssdeep": ssdeep_hash,
-                "sha256": sha256_hash
-            }
-            client_info = self._parse_client_info(peer)
-            if client_info:
-                spam_meta_details.update(client_info)
-
-            spam_meta_details["sender"] = mailfrom
-            spam_meta_details["recipients"] = rcpttos
-            spam_meta_details["sensor_name"] = config.SENSOR_NAME
-
-            print(spam_meta_details)
-
-            self._write_files(sha256_hash, spam_meta_details, data)
-
-    def _is_spam_duplicate(self, data_size, sha256_hash, ssdeep_hash):
-        if sha256_hash in self.unique_sha256_hashes:
-            return True
-
-        # SSDEEP needs data to be larger than 4KB for generating meaningful hashes.
-        if data_size > 4096 and \
-                utils.compare_ssdeep_hashes(self.unique_ssdeep_hashes, ssdeep_hash):
-            return True
+        self._write_files(spam_meta_details, data)
 
     @staticmethod
     def _parse_client_info(peer: tuple):
@@ -71,9 +98,10 @@ class SHIVAServer(SMTPServer):
             print(f"Failed to parsed peer info: {e}")
 
     @staticmethod
-    def _write_files(unique_hash, meta_details: dict, data: bytes):
-        meta_file = os.path.join(config.QUEUE_DIR, f"{unique_hash}.meta")
-        eml_file = os.path.join(config.QUEUE_DIR, f"{unique_hash}.eml")
+    def _write_files(meta_details: dict, data: bytes):
+        unique_name = uuid.uuid4().hex
+        meta_file = os.path.join(config.QUEUE_DIR, f"{unique_name}.meta")
+        eml_file = os.path.join(config.QUEUE_DIR, f"{unique_name}.eml")
 
         print("Writing metadata file.")
         with open(meta_file, "w") as fp:
@@ -82,3 +110,41 @@ class SHIVAServer(SMTPServer):
         print("Writing raw eml file.")
         with open(eml_file, "wb") as fp:
             fp.write(data)
+
+    @staticmethod
+    def _random_delay():
+        time.sleep(random.uniform(0.1, 2))
+
+    @staticmethod
+    def get_current_dt():
+        dt = datetime.datetime.now(datetime.timezone.utc)
+        return dt.isoformat()
+
+    def is_valid_email(self, email):
+        email_regex = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+        return re.match(email_regex, email) is not None
+
+
+if __name__ == "__main__":
+    LOG_FORMAT = "%(asctime)s [%(levelname)s] %(filename)s:%(lineno)d [+] %(message)s"
+    logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
+
+    os.makedirs(config.QUEUE_DIR, exist_ok=True)
+    handler = ShivaHandler()
+    controller = Controller(
+        handler,
+        hostname="localhost",
+        port=2525,
+        authenticator=Authenticator(),
+        auth_required=True,
+        auth_require_tls=False,
+    )
+    controller.start()
+
+    try:
+        print("SMTP server running on localhost:2525. Press Ctrl+C to stop.")
+        asyncio.get_event_loop().run_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        controller.stop()

@@ -1,23 +1,34 @@
-#!/usr/bin/env python3
+#!/usr/bin/venv python3
+import asyncio
+from aiosmtpd.controller import Controller
+import logging
 
-import asyncore
-
-from server import SHIVAServer
-import config
-import utils
+from server import ShivaHandler, Authenticator
 
 
 def run():
-    print("Starting the SMTP server now.")
-    utils.init_receiver()
+    LOG_FORMAT = "%(asctime)s [%(levelname)s] %(filename)s:%(lineno)d [+] %(message)s"
+    logging.basicConfig(level=logging.DEBUG, format=LOG_FORMAT)
 
-    # Instantiating a new object automatically also starts listening on provided host and port
-    SHIVAServer(localaddr=(config.SHIVA_HOST, config.SHIVA_PORT), remoteaddr=None)
+    handler = ShivaHandler()
+    controller = Controller(
+        handler,
+        hostname="0.0.0.0",
+        port=2525,
+        authenticator=Authenticator(),
+        auth_required=True,
+        auth_require_tls=False,
+    )
+    controller.start()
+
     try:
-        asyncore.loop()
+        print("SMTP server running on 0.0.0.0:2525. Press Ctrl+C to stop.")
+        asyncio.get_event_loop().run_forever()
     except KeyboardInterrupt:
         pass
+    finally:
+        controller.stop()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     run()

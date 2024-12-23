@@ -1,4 +1,4 @@
-import requests
+# import requests
 
 
 class VTLookup(object):

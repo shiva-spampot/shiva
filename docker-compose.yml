@@ -1,0 +1,58 @@
+version: '3.8'
+
+networks:
+  shiva_pot:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+
+services:
+  postgres:
+    image: postgres:16  # Specify PostgreSQL version 16
+    container_name: postgres_container  # Name of the container
+    restart: always  # Restart policy
+    environment:
+      POSTGRES_USER: username  # Set the database user
+      POSTGRES_PASSWORD: password  # Set the database password
+      POSTGRES_DB: shiva-pot  # Set the default database name
+    ports:
+      - "5432:5432"  # Map port 5432 on host to port 5432 on container
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data  # Persist data in a named 
+    networks:
+      - shiva_pot
+
+  analyzer:
+    build:
+      context: ./analyzer/src
+      dockerfile: Dockerfile
+    container_name: shiva-analyzer
+    volumes:
+      - ./data/mails:/tmp/spam_queue
+    environment:
+      SSDEEP_SIMILARITY_THRESHOLD: 95
+    networks:
+      - shiva_pot
+    depends_on:
+      - postgres
+    user: "${UID}:${GID}" # Use host's user and group IDs
+  receiver:
+    build:
+      context: ./receiver/src
+      dockerfile: Dockerfile
+    container_name: shiva-receiver
+    volumes:
+      - ./data/mails:/tmp/spam_queue
+    networks:
+      - shiva_pot
+    ports:
+      - "2525:2525"
+    environment:
+      QUEUE_DIR: /tmp/spam_queue/
+      SHIVA_HOST: 0.0.0.0
+      SHIVA_PORT: 2525
+    user: "${UID}:${GID}" # Use host's user and group IDs
+
+# volumes:
+#   postgres_data:

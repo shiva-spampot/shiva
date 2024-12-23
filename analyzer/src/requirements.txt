@@ -1,1 +1,4 @@
-requests==2.27.1
+psycopg2-binary==2.9.9
+python-magic==0.4.27
+SQLAlchemy==2.0.36
+ssdeep==3.
