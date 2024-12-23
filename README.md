@@ -36,6 +36,7 @@ Receiver essentially is an SMTP server which accepts all emails thrown at it. Th
 
 Analyzer (still in development) is the actual brain of the operation and responsible for parsing and analysing spams.The analyzer picks spams from directory shared with receiver and parses the .eml and metadata file. It extracts information such as recipients, URLs, attachments, mail body, etc. Indicators extracted from the email can then be queries via 3rd party integrations such as Virustotal, Hatching Triage, etc., if these are configured with API keys. This extracted information is then indexed in PostgreSQL for easier searching and analysis later. This information can also be shared with other analysts/researchers via Hpfeeds integration.
 
+
 As mentioned above, both the components are independent and can be run via terminal or Docker. The components don’t need to be on the same box as long as they can access a shared folder.
 
 ---
