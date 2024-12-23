@@ -1,24 +1,28 @@
 # SHIVA Spampot
 
-**NOTE**: This project's original source has been moved to 
+**Disclaimer:**  
+This project is currently under development and is not recommended for production use. It may contain bugs, unfinished features, and breaking changes. Use it at your own risk.
+
+**NOTE**: This project's original source has been moved to
 [shiva-legacy](https://github.com/shiva-spampot/shiva-legacy).
 
-* [Background](#background)
-* [Components](#components)
-  + [Receiver](#receiver)
-  + [Analyzer](#analyzer)
-* [Running](#running)
-  + [Receiver](#receiver-1)
-  + [Analyzer](#analyzer-1)
-* [To Do](#to-do)
+- [Background](#background)
+- [Components](#components)
+  - [Receiver](#receiver)
+  - [Analyzer](#analyzer)
+- [Database Schema](#database-schema)
+- [Running](#running)
+  - [Receiver](#receiver-1)
+  - [Analyzer](#analyzer-1)
+- [To Do](#to-do)
 
 ## Background
 
-SHIVA: Spam Honeypot with Intelligent Virtual Analyzer, is an open but controlled relay Spam Honeypot (SpamPot). SHIVA is written in Python 3 and will eventually use Elasticsearch/OpenSearch for storing information parsed from the received spams. Analysis of data captured can be used to get information of phishing attacks, scamming campaigns, malware campaigns, spam botnets, etc.
+SHIVA: Spam Honeypot with Intelligent Virtual Analyzer, is an open but controlled relay Spam Honeypot (SpamPot). SHIVA is written in Python 3 and will eventually use PostgreSQL for storing information parsed from the received spams. Analysis of data captured can be used to get information of phishing attacks, scamming campaigns, malware campaigns, spam botnets, etc.
 
-Originally, SHIVA was initially developed during 2012/2013 and used the Lamson framework in the background. However, due to lack of time, the project was not updated regularly. The old code was complicated and had a lot of monkey-patching which made it harder to maintain. Current efforts will focus on simplifying the codebase, and adding features like easy deployment via Docker, better documentation, Elasticsearch integration for search/analysis, threat intel service lookups, updated OSS licence, etc.
+Originally, SHIVA was initially developed during 2012/2013 and used the Lamson framework in the background. However, due to lack of time, the project was not updated regularly. The old code was complicated and had a lot of monkey-patching which made it harder to maintain. Current efforts will focus on simplifying the codebase, and adding features like easy deployment via Docker, better documentation, PostgreSQL integration for search/analysis, threat intel service lookups, updated OSS licence, etc.
 
------
+---
 
 ## Components
 
@@ -30,13 +34,31 @@ Receiver essentially is an SMTP server which accepts all emails thrown at it. Th
 
 ### Analyzer
 
-Analyzer (still in development) is the actual brain of the operation and responsible for parsing and analysing spams.The analyzer picks spams from directory shared with receiver and parses the .eml and metadata file. It extracts information such as recipients, URLs, attachments, mail body, etc. Indicators extracted from the email can then be queries via 3rd party integrations such as Virustotal, Hatching Triage, etc., if these are configured with API keys. This extracted information is then indexed in Elasticsearch/OpenSearch for easier searching and analysis later. This information can also be shared with other analysts/researchers via Hpfeeds integration.
+Analyzer (still in development) is the actual brain of the operation and responsible for parsing and analysing spams.The analyzer picks spams from directory shared with receiver and parses the .eml and metadata file. It extracts information such as recipients, URLs, attachments, mail body, etc. Indicators extracted from the email can then be queries via 3rd party integrations such as Virustotal, Hatching Triage, etc., if these are configured with API keys. This extracted information is then indexed in PostgreSQL for easier searching and analysis later. This information can also be shared with other analysts/researchers via Hpfeeds integration.
+
 
 As mentioned above, both the components are independent and can be run via terminal or Docker. The components don’t need to be on the same box as long as they can access a shared folder.
 
------
+---
 
-## Running 
+## Database Schema
+
+Here is the visual representation of the database schema:
+You can view the database schema by clicking the link below:
+
+[View Database Schema](images/Shiva-Schema.png)
+
+---
+
+## Running all Components
+
+Run below command to start Reciever, Analyzer and PostgreSQL
+
+```shell
+docker compose up
+```
+
+## Running Individually
 
 ### Receiver
 
@@ -46,6 +68,7 @@ The easiest way to run Receiver is via Docker. To build the Receiver, clone this
 cd receiver/
 docker build -t shiva-spampot/receiver .
 ```
+
 Once the command completes, you can following command to start the container:
 
 ```bash
@@ -54,11 +77,12 @@ docker run --name=shiva-receiver -d -h smtp.somedomain.com \
 ```
 
 To change the container's host name, replace the value passed to `-h` switch in above command. By default the container will also start listening for spams on port 2525. The container will also dump all the emails in a Docker volume - `spam_queue`. You can also pass following environment variables:
-* SHIVA_HOST: Defaults to 0.0.0.0, i.e. listen on all interfaces.
-* SHIVA_PORT: Defaults to port 2525.
-* QUEUE_DIR: Directory to dump all spams in.
-* THRESHOLD: SSDEEP similarity ratio, defaults to 94.
-* SENSOR_NAME: Name of honeypot instance, defaults to hostname of container.
+
+- SHIVA_HOST: Defaults to 0.0.0.0, i.e. listen on all interfaces.
+- SHIVA_PORT: Defaults to port 2525.
+- QUEUE_DIR: Directory to dump all spams in.
+- THRESHOLD: SSDEEP similarity ratio, defaults to 94.
+- SENSOR_NAME: Name of honeypot instance, defaults to hostname of container.
 
 ### Analyzer
 
@@ -68,20 +92,20 @@ The easiest way to run Analyzer is via Docker. To build the Analyzer, clone this
 cd analyzer/
 docker build -t shiva-spampot/analyzer .
 ```
+
 Once the command completes, you can following command to start the container:
 
 ```bash
 docker run -it --name=shiva-analyzer -d -v spam_queue:/tmp/spam_queue/ shiva-spampot/analyzer
 ```
-Right now, the logic to parse emails is still in development and analyzer code is being added regularly.
 
------
+---
 
 ## To Do
 
-- [ ] Add support for SMTP authentication
+- [x] Add support for SMTP authentication
 - [x] Add Analyzer code
 - [x] Email parsing (basic)
-- [x] Virustotal lookup for attachments
-- [ ] Extract URLs from mail body
-- [ ] Index records in ES/Opensearch
+- [ ] Virustotal lookup for attachments
+- [x] Extract URLs from mail body
+- [x] Index records in PostgreSQL

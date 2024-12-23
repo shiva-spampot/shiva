@@ -1,12 +1,10 @@
-#!/usr/bin/env python3
-
 import glob
 import os.path
 from time import sleep
 import json
-
 import config
 import analyzer
+from db.session import SessionLocal
 
 
 def get_file_keys(queue_dir):
@@ -22,16 +20,25 @@ def get_file_keys(queue_dir):
 
 def run():
     print("Starting SHIVA Analyzer now.")
-    shiva_analyzer = analyzer.SHIVAAnalyzer(config)
-
     while True:
+        db = SessionLocal()
+        count = 0
+        shiva_analyzer = analyzer.SHIVAAnalyzer(db, config)
         for file_key in get_file_keys(config.QUEUE_DIR):
-            result = shiva_analyzer.parse(file_key)
-            print(json.dumps(result, indent=4))
-            # TODO: index this result
+            count += 1
+            shiva_analyzer.run(file_key)
+            remove_file(file_key)
 
-        print("Processed all files (if any) collected till now. Sleeping now for 30 seconds.")
-        sleep(30)
+        if not count:
+            sleep(30)
+
+
+def remove_file(file_name: str):
+    file_path = os.path.join(config.QUEUE_DIR, f"{file_name}.eml")
+    os.remove(file_path)
+
+    file_path = os.path.join(config.QUEUE_DIR, f"{file_name}.meta")
+    os.remove(file_path)
 
 
 if __name__ == "__main__":
