@@ -13,8 +13,6 @@ file_magic = magic.Magic(mime=True)
 class EmailParser(object):
     def __init__(self, queue_dir):
         self.queue_dir = queue_dir
-        self.attachments_dir = os.path.join(self.queue_dir, "attachments")
-        os.makedirs(self.attachments_dir, exist_ok=True)
 
     @staticmethod
     def _parse_headers(message: email.message.Message) -> dict:
@@ -33,12 +31,7 @@ class EmailParser(object):
                 self._get_file_type(file_content) or message_part.get_content_type()
             )
             attachment_info["file_sha256"] = hashlib.sha256(file_content).hexdigest()
-            file_path = os.path.join(
-                self.attachments_dir, attachment_info["file_sha256"]
-            )
-            with open(file_path, "wb") as fp:
-                fp.write(file_content)
-            attachment_info["attachment_file_url"] = file_path
+            attachment_info["content"] = file_content
             attachment_info["file_size"] = len(file_content)
             extension_name = self._get_file_extension(attachment_info["file_name"])
             if extension_name:
@@ -94,7 +87,14 @@ class EmailParser(object):
                 continue
 
             if part.get_content_type() in ["text/plain", "text/html"]:
-                parsed_email["body"] += part.get_payload(decode=True).decode()
+                tmp_string = (
+                    part.get_payload()
+                    .encode()
+                    .decode("unicode-escape")
+                    .encode("latin1")
+                    .decode("utf-8")
+                )
+                parsed_email["body"] += tmp_string
 
             elif part.get_content_disposition() == "attachment":
                 attachment_info = self._parse_attachment(part)
@@ -120,7 +120,12 @@ class EmailParser(object):
     def extract_urls(self, text: str) -> list:
         if not text:
             return []
-        regex = r"(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,})"
-        urls = list(set(re.findall(regex, text)))
 
-        return urls
+        regex = r"https?://(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(?::\d+)?(?:/[^\s<>\"#]*)?(?:\?[^\s<>\"#]*)?(?:#[^\s<>\"#]*)?|www\.[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:/[^\s<>\"#]*)?(?:\?[^\s<>\"#]*)?(?:#[^\s<>\"#]*)?"
+        urls = set()
+        for url in set(re.findall(regex, text)):
+            if not url.startswith("http"):
+                continue
+            urls.add(url)
+
+        return list(urls)

@@ -7,3 +7,4 @@ from .attachments import Attachments
 from .email_urls import EmailURLs
 from .email_attachment_mapping import EmailAttachmentMapping
 from .email_url_mapping import EmailURLMapping
+from .email_receiver_mapping import EmailReceiverMapping

@@ -1,5 +1,5 @@
 from typing import Union
-from sqlalchemy import Column, DateTime, Select, func
+from sqlalchemy import Column, DateTime, Select, func, select
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import validates
 from sqlalchemy.event import listen
@@ -15,15 +15,29 @@ class CRUDBase:
 
     @classmethod
     def get_all(cls, db_session: Session, query: Union[dict, Select] = {}):
-        select_query = db_session.query(cls)
 
-        if query:
-            if isinstance(query, dict):
-                select_query = select_query.filter_by(**query)
-            else:
-                select_query = query
+        if isinstance(query, dict):
+            select_query = select("*").select_from(cls)
+            select_query = select_query.filter_by(**query)
+        else:
+            select_query = query
+        results = db_session.execute(select_query).fetchall()
 
-        return select_query.all()
+        return results
+
+    @classmethod
+    def get_one_or_none(cls, db_session: Session, query: dict, order_by=None):
+        if isinstance(query, dict):
+            select_query = select("*").select_from(cls)
+            select_query = select_query.filter_by(**query)
+        else:
+            select_query = query
+
+        if order_by is not None:
+            select_query = select_query.order_by(order_by)
+
+        record = db_session.execute(select_query).fetchone()
+        return record
 
     @classmethod
     def get_by_id(cls, db_session: Session, item_id):
