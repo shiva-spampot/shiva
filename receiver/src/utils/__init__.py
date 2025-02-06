@@ -17,7 +17,7 @@ def get_logger():
     # Set up logging level
     level = getattr(logging, log_level.upper(), logging.DEBUG)
 
-    project_root = pathlib.Path(os.path.dirname(os.path.abspath(__file__))).parent
+    project_root = get_parent_folder()
     logging_folder = os.path.join(project_root, folder_path)
     log_path = os.path.join(logging_folder, log_filename)
     os.makedirs(logging_folder, exist_ok=True)
@@ -40,3 +40,7 @@ def get_logger():
     )
 
     return logging.getLogger()
+
+
+def get_parent_folder():
+    return pathlib.Path(os.path.dirname(os.path.abspath(__file__))).parent

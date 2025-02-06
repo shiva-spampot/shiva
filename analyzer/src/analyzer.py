@@ -96,7 +96,9 @@ class SHIVAAnalyzer(object):
         if campaign:
             return campaign
 
-        raw_email_obj = RawEmails.create(self.db, data=self.parse_result["raw_email"])
+        tmp_raw_file_name = f"raw_emails/{uuid.uuid4().hex}.eml"
+        file_path = self.storage.save(tmp_raw_file_name, self.parse_result["raw_email"])
+        raw_email_obj = RawEmails.create(self.db, data=file_path)
 
         record = {
             "email_body": self.parse_result["body"],

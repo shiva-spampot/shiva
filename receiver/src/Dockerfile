@@ -14,11 +14,13 @@ RUN mkdir -p /tmp/spam_queue \
     && chown -R shiva-spampot:shiva-spampot /tmp/spam_queue
 
 WORKDIR /home/shiva-spampot
+COPY . /home/shiva-spampot/receiver/
+RUN chown -R shiva-spampot:shiva-spampot /home/shiva-spampot/
+
 USER shiva-spampot
 
 RUN python3 -m venv receiver
 
-COPY . /home/shiva-spampot/receiver/
 RUN receiver/bin/pip install wheel && \
     receiver/bin/pip install -r receiver/requirements.txt
 
