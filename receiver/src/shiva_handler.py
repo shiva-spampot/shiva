@@ -15,6 +15,8 @@ import config
 class ShivaHandler:
     def __init__(self):
         self.__config = config.get_config()
+        self.max_email_size = 25 * 1024 * 1024  # 25 MB
+        os.makedirs(self.__config["shiva"]["queue_dir"], exist_ok=True)
 
     async def handle_DATA(
         self,
@@ -23,17 +25,24 @@ class ShivaHandler:
         envelope: SMTPEnvelope,
     ):
         # Handle incoming email data
-        peer = session.peer
-        mail_from = envelope.mail_from
-        rcpt_tos = envelope.rcpt_tos
-        data = envelope.content  # type: bytes
+        try:
+            peer = session.peer
+            mail_from = envelope.mail_from
+            rcpt_tos = envelope.rcpt_tos
+            data = envelope.content  # type: bytes
 
-        email_error = self.validate_emails(mail_from, rcpt_tos)
-        if email_error:
-            return email_error
+            email_error = self.validate_emails(mail_from, rcpt_tos)
+            if email_error:
+                return email_error
 
-        self._process_spam_message(peer, mail_from, rcpt_tos, data)
-        self._random_delay()
+            if len(data) > self.max_email_size:
+                # Reject the email if it exceeds the size limit
+                return f"552 5.3.4 Message size exceeds the limit ({self.max_email_size} bytes)"
+
+            self._process_spam_message(peer, mail_from, rcpt_tos, data)
+            self._random_delay()
+        except:
+            logging.error("Failed to process the mail", exc_info=True)
 
         return f"250 Ok: queued as: {uuid.uuid4()}"
 

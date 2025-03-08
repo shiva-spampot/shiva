@@ -42,7 +42,6 @@ file_path = ""  # replace with your file path
 try:
     server = smtplib.SMTP(smtp_server, smtp_port)
     # server.set_debuglevel(1)
-    server.starttls()  # Secure the connection using TLS
     server.login(username, password)  # Login to your email account
     text = msg.as_string()  # Convert the message to a string
     server.sendmail(sender_email, receiver_email, text)  # Send the email

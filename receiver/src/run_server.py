@@ -1,12 +1,10 @@
 import datetime
-import os
-import ssl
 from aiosmtpd.controller import Controller
 import asyncio
 from aiosmtpd.smtp import SMTP
 from shiva_authenticator import Authenticator
 from shiva_handler import ShivaHandler
-from utils import get_logger, get_parent_folder
+from utils import get_logger
 from config import get_config
 
 
@@ -25,20 +23,12 @@ class ShivaController(Controller):
             "%a, %d %b %Y %H:%M:%S -0"
         )
         ident_str = f"{_config['shiva']['ident']} {dt_str}"
-        context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
 
-        project_root_path = get_parent_folder()
-        certfile_path = os.path.join(project_root_path, "certs/certificate.pem")
-        keyfile_path = os.path.join(project_root_path, "certs/private_key.pem")
-        context.load_cert_chain(
-            certfile=certfile_path, keyfile=keyfile_path
-        )
         kwargs = {
             "ident": ident_str,
             "authenticator": Authenticator(),
             "auth_required": True,
-            "auth_require_tls": True,
-            "tls_context": context,
+            "auth_require_tls": False,
         }
         if server_hostname:
             kwargs["hostname"] = server_hostname

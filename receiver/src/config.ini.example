@@ -1,6 +1,6 @@
 [logging]
-level = DEBUG
-type = file
+level = INFO
+type = console
 filename = log.log
 max_bytes = 10485760
 backup_count = 5
