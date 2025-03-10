@@ -3,8 +3,8 @@ from helpers.common import get_utc_datetime
 from models.base import Base, CRUDBase, TimeStampedMixin
 
 
-class EmailCampaigns(Base, CRUDBase, TimeStampedMixin):
-    __tablename__ = "email_campaigns"
+class Campaigns(Base, CRUDBase, TimeStampedMixin):
+    __tablename__ = "campaigns"
 
     id = Column(BIGINT, primary_key=True, index=True)
     body_sha256 = Column(
@@ -16,7 +16,7 @@ class EmailCampaigns(Base, CRUDBase, TimeStampedMixin):
     body_ssdeep = Column(Text, comment="SSDEEP of the normalized content")
     subject = Column(Text)
     body_size = Column(BIGINT)
-    campaign_name = Column(
+    name = Column(
         String, comment="Optional: a name or identifier for the campaign"
     )
     first_seen_at = Column(

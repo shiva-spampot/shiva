@@ -1,15 +1,17 @@
 import glob
 import os.path
 from time import sleep
-import json
-import config
+from config import config
 import analyzer
+from utils import get_logger
 from db.session import SessionLocal
+
+logger = get_logger()
 
 
 def get_file_keys(queue_dir):
     if not os.path.exists(queue_dir):
-        print("Queue directory does not exists. Creating it.")
+        logger.info("Queue directory does not exists. Creating it.")
         os.mkdir(queue_dir)
 
     for eml_file in glob.iglob(f"{queue_dir}/*.eml"):
@@ -19,12 +21,13 @@ def get_file_keys(queue_dir):
 
 
 def run():
-    print("Starting SHIVA Analyzer now.")
+    logger.info("Starting SHIVA Analyzer now.")
     while True:
         db = SessionLocal()
         count = 0
         shiva_analyzer = analyzer.SHIVAAnalyzer(db, config)
-        for file_key in get_file_keys(config.QUEUE_DIR):
+        for file_key in get_file_keys(config["shiva"]["queue_dir"]):
+            logger.info(f"Proccessing file: {file_key}")
             count += 1
             shiva_analyzer.run(file_key)
             remove_file(file_key)
@@ -34,10 +37,10 @@ def run():
 
 
 def remove_file(file_name: str):
-    file_path = os.path.join(config.QUEUE_DIR, f"{file_name}.eml")
+    file_path = os.path.join(config["shiva"]["queue_dir"], f"{file_name}.eml")
     os.remove(file_path)
 
-    file_path = os.path.join(config.QUEUE_DIR, f"{file_name}.meta")
+    file_path = os.path.join(config["shiva"]["queue_dir"], f"{file_name}.meta")
     os.remove(file_path)
 
 

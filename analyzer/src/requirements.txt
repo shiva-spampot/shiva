@@ -1,4 +1,5 @@
 psycopg2-binary==2.9.9
 python-magic==0.4.27
 SQLAlchemy==2.0.36
-ssdeep==3.
+ssdeep==3.0
+boto3==1.36.6

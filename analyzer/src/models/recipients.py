@@ -2,8 +2,8 @@ from sqlalchemy import Column, BIGINT, String
 from models.base import Base, CRUDBase, TimeStampedMixin
 
 
-class Receivers(Base, CRUDBase, TimeStampedMixin):
-    __tablename__ = "receivers"
+class Recipients(Base, CRUDBase, TimeStampedMixin):
+    __tablename__ = "recipients"
 
     id = Column(BIGINT, primary_key=True, index=True)
     email = Column(

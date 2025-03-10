@@ -5,3 +5,6 @@ __pycache__/
 .idea/
 extras/
 .env
+config.ini
+logs/
+log.log

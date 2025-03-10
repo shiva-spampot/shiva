@@ -1,0 +1,30 @@
+[logging]
+level = INFO
+type = console
+filename = log.log
+max_bytes = 10485760
+backup_count = 5
+format = %(asctime)s [%(levelname)s] %(filename)s:%(lineno)d [+] %(message)s
+folder_path = ./logs
+
+[database]
+url = postgresql://username:password@postgres/shiva-pot
+
+[shiva]
+queue_dir = /tmp/spam_queue/
+vt_api_key = 
+archive_dir = /tmp/spam_queue/
+ssdeep_similarity_threshold = 90
+
+[storage]
+; Specify the backend type you want to use. 
+; Choose either 's3' for Amazon S3 or 'local' for local filesystem storage.
+; For local
+storage_type = local
+directory_path = /tmp/spam_queue/files
+
+; For S3
+; storage_type = s3
+; bucket_name=<YOUR_BUCKET_NAME>
+; region_name = us-east-1
+; file_path_in_s3 = files

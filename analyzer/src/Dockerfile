@@ -20,5 +20,6 @@ RUN python3 -m venv analyzer
 
 COPY . /home/shiva-spampot/analyzer/
 RUN analyzer/bin/pip install -r analyzer/requirements.txt
+RUN cp analyzer/config.ini.example analyzer/config.ini
 
 CMD ["analyzer/bin/python3", "analyzer/run_analyzer.py"]

@@ -2,8 +2,8 @@ from sqlalchemy import Column, BIGINT, Text, Boolean, CHAR
 from models.base import Base, CRUDBase, TimeStampedMixin
 
 
-class EmailURLs(Base, CRUDBase, TimeStampedMixin):
-    __tablename__ = "email_urls"
+class URLs(Base, CRUDBase, TimeStampedMixin):
+    __tablename__ = "urls"
 
     id = Column(BIGINT, primary_key=True, index=True)
     url = Column(Text, nullable=False, comment="The full URL extracted from the email")

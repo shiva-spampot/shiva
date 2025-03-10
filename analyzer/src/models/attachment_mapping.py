@@ -2,8 +2,8 @@ from sqlalchemy import Column, BIGINT, ForeignKey, UniqueConstraint
 from models.base import Base, CRUDBase, TimeStampedMixin
 
 
-class EmailAttachmentMapping(Base, CRUDBase, TimeStampedMixin):
-    __tablename__ = "email_attachment_mapping"
+class AttachmentMapping(Base, CRUDBase, TimeStampedMixin):
+    __tablename__ = "attachment_mapping"
 
     id = Column(BIGINT, primary_key=True, index=True)
     email_id = Column(BIGINT, ForeignKey("emails.id"), nullable=False)
