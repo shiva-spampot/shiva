@@ -18,9 +18,9 @@ This project is currently under development and is not recommended for productio
 
 ## Background
 
-SHIVA: Spam Honeypot with Intelligent Virtual Analyzer, is an open but controlled relay Spam Honeypot (SpamPot). SHIVA is written in Python 3 and will eventually use PostgreSQL for storing information parsed from the received spams. Analysis of data captured can be used to get information of phishing attacks, scamming campaigns, malware campaigns, spam botnets, etc.
+SHIVA: Spam Honeypot with Intelligent Virtual Analyzer, is a Spam Honeypot (SpamPot). SHIVA acts as an SMTP server which can be configured to act as an open-relay or authenticated mail server. SHIVA is written in Python 3 and extends `aiosmtpd` for implementing SMTP capabilities. For the database, SHIVA uses PostgreSQL for storing information parsed from the received spams. Analysis of data captured can be used to get information of phishing attacks, scamming campaigns, malware campaigns, spam botnets, etc.
 
-Originally, SHIVA was initially developed during 2012/2013 and used the Lamson framework in the background. However, due to lack of time, the project was not updated regularly. The old code was complicated and had a lot of monkey-patching which made it harder to maintain. Current efforts will focus on simplifying the codebase, and adding features like easy deployment via Docker, better documentation, PostgreSQL integration for search/analysis, threat intel service lookups, updated OSS licence, etc.
+Originally, SHIVA was initially developed around 2012 under The Honeynet Project. SHIVA was also a part of the Google Summer of Code program in 2013. It used the Lamson library and monkey-patched the library with a lot of custom code. However, due to difficulty to maintain the code and lack of time, the project was not updated regularly. The old code was very hard to maintain/customize and hence a decision was taken to rewrite it from scratch. Current efforts focus on simplifying the codebase, and adding features like easy deployment via Docker, better documentation, PostgreSQL integration for search/analysis, threat intel service lookups, updated OSS licence, etc.
 
 ---
 
@@ -30,11 +30,12 @@ The spampot is divided into two components: Receiver and Analyzer. The decision 
 
 ### Receiver
 
-Receiver essentially is an SMTP server which accepts all emails thrown at it. The email along with the metadata like sender IP, email, recipients, SSDEEP hash, etc is dumped in a directory. This directory is also monitored by Analyzer to parse these emails. To avoid saving duplicate messages, Receiver calculates SHA-1 and SSDEEP hash for each email and discards the exact same emails. For emails that might be almost similar, we also compare the SSDEEP hash with existing ones (only if the email size is over 4KB) and discard if the similarity is above a certain threshold. We aim to add support for authentication and SSL communication in future versions.
+Receiver essentially is an SMTP server which accepts all emails thrown at it. These spam emails are then validated against various checks. Once validates, we extract the basic metadata from them and then the email is dumped as a file in the shared email queue directory. As of now, we only support a directory for sharing the emails between the Receiver and Analyzer. However, in future, we can add more storage providers based on the use case and requirements. The receiver also support authentication and custom credentials can be provided to add authenticity.
+
 
 ### Analyzer
 
-Analyzer (still in development) is the actual brain of the operation and responsible for parsing and analysing spams.The analyzer picks spams from directory shared with receiver and parses the .eml and metadata file. It extracts information such as recipients, URLs, attachments, mail body, etc. Indicators extracted from the email can then be queries via 3rd party integrations such as Virustotal, Hatching Triage, etc., if these are configured with API keys. This extracted information is then indexed in PostgreSQL for easier searching and analysis later. This information can also be shared with other analysts/researchers via Hpfeeds integration.
+Analyzer is the actual brain of the operation and responsible for parsing and analysing spams. This component keeps a watch on the shared email queue directory and as soon as a new spam is received, it parses the email file, extracts all the important fields and then checks if we have seen this spam already. To avoid saving duplicate messages, Analyzer calculates SHA-1 and SSDEEP hash for each email and discards the exact same emails. For emails that might be almost similar, we also compare the SSDEEP hash with existing ones (however it is not much useful for emails under 4 KB) and discard if the similarity is above a certain threshold. Depending on the result, the email is either added to an existing campaign or a new campaign is created. All the collected data is then stored in the PostgreSQL database.
 
 
 As mentioned above, both the components are independent and can be run via terminal or Docker. The components don’t need to be on the same box as long as they can access a shared folder.
