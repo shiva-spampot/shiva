@@ -106,8 +106,8 @@ class EmailParser(object):
             parsed_email["body_size"] = len(body)
             parsed_email["body_sha256"] = hashlib.sha256(body).hexdigest()
 
-            # SSDEEP needs data to be larger than 4KB for generating meaningful hashes.
-            if len(body) > 4096:
+            # SSDEEP needs data to be larger than 64 bytes for generating meaningful hashes for string
+            if len(body) > 700:
                 parsed_email["body_ssdeep"] = ssdeep.hash(body)
 
             parsed_email["urls"] = self.extract_urls(body.decode())

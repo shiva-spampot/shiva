@@ -8,16 +8,16 @@ from sqlalchemy import select
 import ssdeep
 from storages.local import LocalStorage
 from helpers.factory import get_storage_backend
-from models.email_receiver_mapping import EmailReceiverMapping
+from models.recipients_mapping import RecipientsMapping
 from config import config
 from models.attachments import Attachments
-from models.email_attachment_mapping import EmailAttachmentMapping
-from models.email_campaigns import EmailCampaigns
-from models.email_url_mapping import EmailURLMapping
-from models.email_urls import EmailURLs
+from models.attachment_mapping import AttachmentMapping
+from models.campaigns import Campaigns
+from models.url_mapping import URLMapping
+from models.urls import URLs
 from models.emails import Emails
 from models.raw_emails import RawEmails
-from models.receivers import Receivers
+from models.recipients import Recipients
 from models.senders import Senders
 from integrations import virustotal
 import email_parser
@@ -112,9 +112,13 @@ class SHIVAAnalyzer(object):
         if self.parse_result.get("body_ssdeep"):
             record["body_ssdeep"] = self.parse_result["body_ssdeep"]
 
-        return EmailCampaigns.create(self.db, **record)
+        campaign_obj = Campaigns.create(self.db, **record)
+        campaign_name = f"Campaign {campaign_obj.id}"
+        campaign_obj = Campaigns.update(self.db, campaign_obj.id, name=campaign_name)
 
-    def get_or_create_email(self, campaign_obj: EmailCampaigns):
+        return campaign_obj
+
+    def get_or_create_email(self, campaign_obj: Campaigns):
         sender = self.parse_result["sender"]
         sender_obj = self.get_or_create_sender(sender)
 
@@ -136,9 +140,9 @@ class SHIVAAnalyzer(object):
         for recipient in self.parse_result["recipients"]:
             receiver_obj = self.get_or_create_receiver(recipient)
 
-            record = {"email_id": email_obj.id, "receiver_id": receiver_obj.id}
+            record = {"email_id": email_obj.id, "recipient_id": receiver_obj.id}
 
-            EmailReceiverMapping.create(self.db, **record)
+            RecipientsMapping.create(self.db, **record)
 
         return email_obj
 
@@ -147,7 +151,7 @@ class SHIVAAnalyzer(object):
         body_ssdeep = self.parse_result.get("body_ssdeep")
         body_size = self.parse_result.get("body_size")
         query = {"body_sha256": body_sha256}
-        campaign_obj = EmailCampaigns.get_one_or_none(self.db, query)
+        campaign_obj = Campaigns.get_one_or_none(self.db, query)
         if campaign_obj:
             return campaign_obj
 
@@ -162,24 +166,27 @@ class SHIVAAnalyzer(object):
         difference = 0.13 * body_size
         min_value = body_size - difference
         max_value = body_size + difference
-        query = select(EmailCampaigns.id, EmailCampaigns.body_ssdeep).filter(
-            EmailCampaigns.body_size.between(
+        query = select(Campaigns.id, Campaigns.body_ssdeep).filter(
+            Campaigns.body_size.between(
                 min_value,
                 max_value,
             ),
-            EmailCampaigns.body_ssdeep.is_not(None),
+            Campaigns.body_ssdeep.is_not(None),
         )
-        capmaigns = EmailCampaigns.get_all(self.db, query)
+        capmaigns = Campaigns.get_all(self.db, query)
+        ssdeep_similarity_threshold = int(
+            config["shiva"]["ssdeep_similarity_threshold"]
+        )
         for result in capmaigns:
             score = ssdeep.compare(body_ssdeep, result.body_ssdeep)
-            if score >= config.SSDEEP_SIMILARITY_THRESHOLD:
-                return result.id
+            if score >= ssdeep_similarity_threshold:
+                return result
 
     def process_urls(self, email_obj: Emails):
         for url in self.parse_result["urls"]:
             url_obj = self.get_or_create_email_url(url)
             try:
-                EmailURLMapping.create(
+                URLMapping.create(
                     self.db,
                     email_id=email_obj.id,
                     url_id=url_obj.id,
@@ -191,7 +198,7 @@ class SHIVAAnalyzer(object):
         for attachment in self.parse_result["attachments"]:
             attachment_obj = self.get_or_create_attachment(attachment)
             try:
-                EmailAttachmentMapping.create(
+                AttachmentMapping.create(
                     self.db,
                     email_id=email_obj.id,
                     attachment_id=attachment_obj.id,
@@ -199,10 +206,10 @@ class SHIVAAnalyzer(object):
             except:
                 pass
 
-    def get_or_create_email_url(self, url: str) -> EmailURLs:
+    def get_or_create_email_url(self, url: str) -> URLs:
         url_sha256 = hashlib.sha256(url.encode()).hexdigest()
         query = {"url_sha256": url_sha256}
-        email_url_obj = EmailURLs.get_one_or_none(self.db, query)
+        email_url_obj = URLs.get_one_or_none(self.db, query)
         if email_url_obj:
             return email_url_obj
 
@@ -212,7 +219,7 @@ class SHIVAAnalyzer(object):
             "url_sha256": url_sha256,
             "domain": url_obj.hostname,
         }
-        email_url_obj = EmailURLs.create(self.db, **record)
+        email_url_obj = URLs.create(self.db, **record)
 
         return email_url_obj
 
@@ -251,13 +258,13 @@ class SHIVAAnalyzer(object):
         email_obj = Senders.create(self.db, email=email, domain=email.split("@")[-1])
         return email_obj
 
-    def get_or_create_receiver(self, email: str) -> Receivers:
+    def get_or_create_receiver(self, email: str) -> Recipients:
         query = {"email": email}
 
-        email_obj = Receivers.get_one_or_none(self.db, query)
+        email_obj = Recipients.get_one_or_none(self.db, query)
         if email_obj:
             return email_obj
 
-        email_obj = Receivers.create(self.db, email=email, domain=email.split("@")[-1])
+        email_obj = Recipients.create(self.db, email=email, domain=email.split("@")[-1])
 
         return email_obj

@@ -3,7 +3,9 @@ import logging.handlers
 import os
 import pathlib
 from config import config
+import warnings
 
+warnings.filterwarnings("ignore", category=UserWarning, message="Requiring AUTH while not requiring TLS can lead to security vulnerabilities!")
 
 def get_logger():
     log_level = config["logging"]["level"]

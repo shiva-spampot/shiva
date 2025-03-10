@@ -24,6 +24,8 @@ RUN python3 -m venv receiver
 RUN receiver/bin/pip install wheel && \
     receiver/bin/pip install -r receiver/requirements.txt
 
+RUN cp receiver/config.ini.example receiver/config.ini
+
 ENV SHIVA_HOST=0.0.0.0
 EXPOSE 2525/tcp
 

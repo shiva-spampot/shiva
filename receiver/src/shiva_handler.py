@@ -40,7 +40,7 @@ class ShivaHandler:
                 return f"552 5.3.4 Message size exceeds the limit ({self.max_email_size} bytes)"
 
             self._process_spam_message(peer, mail_from, rcpt_tos, data)
-            self._random_delay()
+            # self._random_delay()
         except:
             logging.error("Failed to process the mail", exc_info=True)
 
@@ -92,7 +92,7 @@ class ShivaHandler:
 
     @staticmethod
     def _random_delay():
-        time.sleep(random.uniform(0.1, 2))
+        time.sleep(random.uniform(0.1, 0.6))
 
     @staticmethod
     def get_current_dt():

@@ -9,7 +9,7 @@ class Emails(Base, CRUDBase, TimeStampedMixin):
     id = Column(BIGINT, primary_key=True, index=True)
     subject = Column(Text)
     sender_id = Column(BIGINT, ForeignKey("senders.id"), nullable=False)
-    campaign_id = Column(BIGINT, ForeignKey("email_campaigns.id"), nullable=False)
+    campaign_id = Column(BIGINT, ForeignKey("campaigns.id"), nullable=False)
     send_at = Column(DateTime)
     sender_ip = Column(INET, nullable=False)
     user_agent = Column(Text)

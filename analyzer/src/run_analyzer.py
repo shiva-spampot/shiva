@@ -27,6 +27,7 @@ def run():
         count = 0
         shiva_analyzer = analyzer.SHIVAAnalyzer(db, config)
         for file_key in get_file_keys(config["shiva"]["queue_dir"]):
+            logger.info(f"Proccessing file: {file_key}")
             count += 1
             shiva_analyzer.run(file_key)
             remove_file(file_key)
