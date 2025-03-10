@@ -18,6 +18,12 @@ services:
       POSTGRES_DB: shiva-pot  # Set the default database name
     ports:
       - "5432:5432"  # Map port 5432 on host to port 5432 on container
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "username", "-d", "postgres"]
+      interval: 10s  # How often to check the health
+      retries: 5     # Number of retries before considering the container unhealthy
+      start_period: 30s  # Time to wait for the container to initialize before starting health checks
+      timeout: 5s
     volumes:
       - ./data/postgres:/var/lib/postgresql/data  # Persist data in a named 
     networks:
@@ -35,7 +41,8 @@ services:
     networks:
       - shiva_pot
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     user: "${UID}:${GID}" # Use host's user and group IDs
   receiver:
     build:
